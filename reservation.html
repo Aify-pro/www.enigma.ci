@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Réservation — ENIGMA Escape Game Abidjan</title>
+<meta name="description" content="Réservez votre créneau chez Enigma, escape game à Bietry, Abidjan. Le créneau se bloque à réception de l'acompte.">
+<meta name="theme-color" content="#05070a">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
+<link rel="apple-touch-icon" href="favicon-180.png">
+<meta property="og:title" content="Réservation — ENIGMA Escape Game Abidjan">
+<meta property="og:description" content="Réservez votre créneau chez Enigma, escape game à Bietry, Abidjan. Le créneau se bloque à réception de l'acompte.">
+<meta property="og:image" content="https://enigma.ci/enigma-logo.png">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Michroma&family=Oswald:wght@300;400;500;600&family=Familjen+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/enigma.css">
+</head>
+<body>
+
+<canvas id="webgl"></canvas>
+<div id="fuse"></div>
+<div id="vignette"></div>
+<div id="grain"></div>
+<div id="cursor"><div class="ring"><span class="label">Entrer</span></div><div class="dot"></div></div>
+
+<header class="nav" id="siteNav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo" data-cursor="hover" aria-label="Enigma Escape Games"><img class="logo-img" src="enigma-logo.png" alt="Enigma Escape Games"></a>
+    <nav class="links" id="navLinks">
+      <a href="index.html" data-cursor="hover">Accueil</a>
+      <a href="salles.html" data-cursor="hover">Nos salles</a>
+      <a href="reservation.html" data-cursor="hover">Réservation</a>
+      <a href="classement.html" data-cursor="hover">Classement</a>
+      <a href="videos.html" data-cursor="hover">Vidéos</a>
+      <a href="apropos.html" data-cursor="hover">À propos</a>
+      <a href="contact.html" data-cursor="hover">Contact</a>
+      <a href="compte.html" data-cursor="hover">Mon compte</a>
+    </nav>
+    <div class="nav-right">
+      <div class="chrono" id="chrono" title="Durée d'une partie"><i></i><span id="chronoVal">60:00</span></div>
+      <a href="reservation.html" class="btn btn-primary magnetic" data-cursor="hover"><span>Réserver</span></a>
+      <button class="burger" id="burger" aria-label="Ouvrir le menu" aria-expanded="false"><i></i><i></i></button>
+    </div>
+  </div>
+</header>
+
+<div id="mobileMenu">
+  <a href="index.html">Accueil</a>  <a href="salles.html">Nos salles</a>  <a href="reservation.html">Réservation</a>  <a href="classement.html">Classement</a>  <a href="videos.html">Vidéos</a>  <a href="apropos.html">À propos</a>  <a href="contact.html">Contact</a><a href="compte.html">Mon compte</a>
+  <small data-site="phone">+225 07 88 02 00 00</small>
+</div>
+
+<section class="page-head">
+  <div class="wrap">
+    <p class="crumbs"><a href="index.html">Accueil</a> <span>/</span> <span>Réservation</span></p>
+    <h1>Réservation</h1>
+    <p>Choisissez votre salle, votre jour et votre créneau. Votre demande arrive directement chez nous : le créneau se bloque dès réception de l'acompte.</p>
+  </div>
+</section>
+
+<main id="top">
+  <section id="reservation" style="padding-top:70px;">
+    <div class="wrap">
+      <div class="booking-panel reveal">
+        <div class="room-tabs" id="roomTabs" role="tablist" aria-label="Choix de la salle">
+          <button class="room-tab active" data-room="immortels" data-cursor="hover">Les Immortels</button>
+          <button class="room-tab" data-room="salle13" data-cursor="hover">Salle 13</button>
+          <button class="room-tab" data-room="saw" data-cursor="hover">SAW</button>
+          <span class="tab-ink" id="tabInk"></span>
+        </div>
+
+        <div class="booking-grid">
+          <div>
+            <label>Choisissez un jour</label>
+            <div class="day-row" id="dayRow"></div>
+            <label>Créneaux disponibles</label>
+            <div class="slots" id="slotRow"></div>
+          </div>
+          <div>
+            <div id="bookingIntro">
+              <label>Récapitulatif</label>
+              <p style="color:var(--fog-dim); font-size:14px;">Sélectionnez un créneau à gauche pour continuer votre demande de réservation.</p>
+            </div>
+            <form class="booking-form" id="bookingForm" novalidate>
+              <div class="recap"><div class="k">Votre créneau</div><div class="v" id="summaryLine">—</div><div class="k" style="margin-top:12px;">Tarif estimé</div><div class="v" id="priceLine" style="color:var(--brass);">—</div></div>
+              <div class="form-row">
+                <div><label for="nom">Nom complet</label><input id="nom" name="nom" autocomplete="name" required><span class="err-msg">Indiquez le nom de la réservation.</span></div>
+                <div><label for="tel">Téléphone</label><input id="tel" name="tel" inputmode="tel" autocomplete="tel" placeholder="07 00 00 00 00" required><span class="err-msg">Un numéro joignable est nécessaire pour l'acompte.</span></div>
+              </div>
+              <div class="form-row">
+                <div><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email" required><span class="err-msg">Vérifiez le format de l'adresse.</span></div>
+                <div><label for="joueurs">Nombre de joueurs</label><select id="joueurs" name="joueurs"><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option></select></div>
+              </div>
+              <div class="form-row">
+                <div><label for="extreme">Mode extrême</label><select id="extreme" name="extreme"><option value="0">Non</option><option value="1">Oui (+ supplément)</option></select></div>
+                <div><label for="msg">Message (facultatif)</label><input id="msg" name="msg" placeholder="Anniversaire, team building…"></div>
+              </div>
+              <div class="form-note">Votre créneau reste <strong>&nbsp;provisoire</strong>. Il se bloque à réception de l'acompte et après validation de l'équipe. Vous recevez la confirmation par téléphone ou par email.</div>
+              <button type="submit" class="btn btn-primary magnetic" data-cursor="hover"><span>Envoyer ma demande</span></button>
+            </form>
+            <div class="confirm-box" id="confirmBox">
+              <div class="seal"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" pathLength="1"/><path d="M20 33 L29 41 L45 24" pathLength="1"/></svg></div>
+              <span class="mark">Demande envoyée</span>
+              <p style="color:var(--fog-dim); font-size:14px;">Demande reçue pour <strong id="confirmDetail" style="color:var(--fog-bright)"></strong>. L'équipe vous rappelle pour l'acompte — le créneau se bloque à ce moment-là.</p>
+              <p style="margin-top:16px;"><button class="btn btn-ghost magnetic" id="againBtn" type="button" data-cursor="hover"><span>Faire une autre demande</span></button></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="process" id="process">
+          <div class="process-line" id="processLine"></div>
+          <div class="process-step on" data-step="1"><span class="pn">01</span><h4>Choix du créneau</h4><p>Vous sélectionnez une salle et un horaire libre.</p></div>
+          <div class="process-step" data-step="2"><span class="pn">02</span><h4>Demande envoyée</h4><p>Vos coordonnées nous arrivent, statut « en attente ».</p></div>
+          <div class="process-step" data-step="3"><span class="pn">03</span><h4>Acompte réglé</h4><p>Nous validons la demande dès réception de l'acompte.</p></div>
+          <div class="process-step" data-step="4"><span class="pn">04</span><h4>Créneau bloqué</h4><p>Le créneau devient indisponible pour les autres clients.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="contact-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div><a href="index.html" class="logo" style="margin-bottom:14px; display:inline-flex;"><img class="logo-img" src="enigma-logo.png" alt="Enigma Escape Games"></a><p>L'escape game grandeur nature de Bietry, Abidjan.</p></div>
+      <div><h5>Adresse</h5><p data-site="address">Bietry<br>Rue des Majorettes, face SMO<br>Abidjan — Côte d'Ivoire</p></div>
+      <div><h5>Contact</h5><p><a href="tel:+2250788020000" data-site="phone">+225 07 88 02 00 00</a><br><a href="mailto:contact@enigma.ci" data-site="email">contact@enigma.ci</a></p><p style="margin-top:10px;"><a href="https://instagram.com/enigma.ci" data-site="instagram" target="_blank" rel="noopener">Instagram</a> · <a href="https://www.facebook.com/enigmaescapegameci" data-site="facebook" target="_blank" rel="noopener">Facebook</a></p></div>
+      <div><h5>Horaires</h5><p data-site="hours">Mer – Ven : 12h – 00h<br>Sam : 12h – 02h<br>Dim : 14h – 22h<br>Lun – Mar : fermé</p></div>
+    </div>
+    <div class="footer-grid" style="grid-template-columns:repeat(4,1fr); margin-bottom:34px;">
+      <div><h5>Le site</h5><p><a href="salles.html">Nos salles</a><br><a href="reservation.html">Réservation</a><br><a href="classement.html">Classement</a></p></div>
+      <div><h5>Découvrir</h5><p><a href="videos.html">Vidéos</a><br><a href="apropos.html">À propos</a><br><a href="apropos.html#faq">Questions fréquentes</a></p></div>
+      <div><h5>Joueurs</h5><p><a href="compte.html">Mon compte</a><br><a href="compte.html">Créer un compte</a></p></div>
+      <div><h5>Nous trouver</h5><p><a href="contact.html">Contact &amp; plan d'accès</a></p></div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Enigma Escape Game — Abidjan, Côte d'Ivoire.</span>
+      <span id="localClock">—</span>
+    </div>
+    <div class="footer-logo" id="footerBig" aria-hidden="true"><img src="enigma-logo.png" alt=""></div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+  window.ENIGMA_SITE = {
+    supabaseUrl:'https://lkklkceakfmufgtzzjwy.supabase.co',
+    supabaseAnonKey:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxra2xrY2Vha2ZtdWZndHp6and5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMjczMTYsImV4cCI6MjA5NjYwMzMxNn0.L-I5xh53vycuAFPr0QsOBAeiIEtG0D1rVIWSGjFvils'
+  };
+</script>
+<script src="assets/enigma.js"></script>
+</body>
+</html>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nos salles — ENIGMA Escape Game Abidjan</title>
+<meta name="description" content="Les trois salles d'Enigma à Bietry, Abidjan : Les Immortels, Salle 13 et SAW. 60 minutes, 2 à 6 joueurs, mode extrême disponible.">
+<meta name="theme-color" content="#05070a">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
+<link rel="apple-touch-icon" href="favicon-180.png">
+<meta property="og:title" content="Nos salles — ENIGMA Escape Game Abidjan">
+<meta property="og:description" content="Les trois salles d'Enigma à Bietry, Abidjan : Les Immortels, Salle 13 et SAW. 60 minutes, 2 à 6 joueurs, mode extrême disponible.">
+<meta property="og:image" content="https://enigma.ci/enigma-logo.png">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Michroma&family=Oswald:wght@300;400;500;600&family=Familjen+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/enigma.css">
+</head>
+<body>
+
+<canvas id="webgl"></canvas>
+<div id="fuse"></div>
+<div id="vignette"></div>
+<div id="grain"></div>
+<div id="cursor"><div class="ring"><span class="label">Entrer</span></div><div class="dot"></div></div>
+
+<header class="nav" id="siteNav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo" data-cursor="hover" aria-label="Enigma Escape Games"><img class="logo-img" src="enigma-logo.png" alt="Enigma Escape Games"></a>
+    <nav class="links" id="navLinks">
+      <a href="index.html" data-cursor="hover">Accueil</a>
+      <a href="salles.html" data-cursor="hover">Nos salles</a>
+      <a href="reservation.html" data-cursor="hover">Réservation</a>
+      <a href="classement.html" data-cursor="hover">Classement</a>
+      <a href="videos.html" data-cursor="hover">Vidéos</a>
+      <a href="apropos.html" data-cursor="hover">À propos</a>
+      <a href="contact.html" data-cursor="hover">Contact</a>
+      <a href="compte.html" data-cursor="hover">Mon compte</a>
+    </nav>
+    <div class="nav-right">
+      <div class="chrono" id="chrono" title="Durée d'une partie"><i></i><span id="chronoVal">60:00</span></div>
+      <a href="reservation.html" class="btn btn-primary magnetic" data-cursor="hover"><span>Réserver</span></a>
+      <button class="burger" id="burger" aria-label="Ouvrir le menu" aria-expanded="false"><i></i><i></i></button>
+    </div>
+  </div>
+</header>
+
+<div id="mobileMenu">
+  <a href="index.html">Accueil</a>  <a href="salles.html">Nos salles</a>  <a href="reservation.html">Réservation</a>  <a href="classement.html">Classement</a>  <a href="videos.html">Vidéos</a>  <a href="apropos.html">À propos</a>  <a href="contact.html">Contact</a><a href="compte.html">Mon compte</a>
+  <small data-site="phone">+225 07 88 02 00 00</small>
+</div>
+
+<section class="page-head">
+  <div class="wrap">
+    <p class="crumbs"><a href="index.html">Accueil</a> <span>/</span> <span>Nos salles</span></p>
+    <h1>Nos salles</h1>
+    <p>Un couloir, trois portes. Faites défiler pour avancer : chaque salle est un décor grandeur nature, conçu pour 2 à 6 joueurs et 60 minutes de chrono.</p>
+  </div>
+</section>
+<main id="top">
+  <section id="salles" style="padding-top:70px;">
+
+    <div class="corridor" id="corridor">
+      <div class="corridor-track" id="corridorTrack">
+        <div class="spacer"></div>
+
+        <article class="door tilt" id="immortels" data-cursor="look" data-room-key="immortels">
+          <div class="door-photo">
+            <span class="tape">Salle 01</span>
+            <span class="stamp"><i class="lit"></i><i class="lit"></i><i class="lit"></i><i></i></span>
+            <div class="art">
+              <svg viewBox="0 0 100 100" aria-hidden="true">
+                <path class="draw" d="M32 18 H68 L52 50 L68 82 H32 L48 50 Z"/>
+                <line class="draw" x1="28" y1="18" x2="72" y2="18"/><line class="draw" x1="28" y1="82" x2="72" y2="82"/>
+                <path class="draw hot" d="M50 50 L44 74 H56 Z"/>
+                <circle class="draw" cx="50" cy="12" r="4"/>
+              </svg>
+              <span class="idx">01</span>
+            </div>
+          </div>
+          <div class="door-body">
+            <h3 class="door-title">Les Immortels</h3>
+            <p class="door-text">Certains ne meurent jamais. D'autres n'ont simplement pas encore trouvé la sortie. Soixante minutes pour rejoindre le bon camp.</p>
+            <div class="room-stats"><span class="d-dur">60 min</span><span class="d-players">2–6 joueurs</span><span class="d-mode">Mode extrême</span></div>
+            <a href="reservation.html#immortels" class="room-link" data-cursor="hover">Voir les disponibilités →</a>
+          </div>
+        </article>
+
+        <article class="door tilt" id="salle13" data-cursor="look" data-room-key="salle13">
+          <div class="door-photo">
+            <span class="tape">Salle 02</span>
+            <span class="stamp"><i class="lit"></i><i class="lit"></i><i class="lit"></i><i class="lit"></i></span>
+            <div class="art">
+              <svg viewBox="0 0 100 100" aria-hidden="true">
+                <rect class="draw" x="28" y="14" width="44" height="72"/>
+                <rect class="draw" x="34" y="20" width="32" height="60"/>
+                <circle class="draw hot" cx="60" cy="52" r="2.5"/>
+                <path class="draw" d="M42 34 V44 M50 34 Q56 34 56 39 Q56 44 50 44 Q56 44 56 49 Q56 54 50 54"/>
+                <line class="draw" x1="20" y1="86" x2="80" y2="86"/>
+              </svg>
+              <span class="idx">13</span>
+            </div>
+          </div>
+          <div class="door-body">
+            <h3 class="door-title">Salle 13</h3>
+            <p class="door-text">Personne ne loue la treizième chambre. Personne n'en parle non plus. Ce soir, la clé est sur la porte — et elle tourne toute seule.</p>
+            <div class="room-stats"><span class="d-dur">60 min</span><span class="d-players">2–6 joueurs</span><span class="d-mode">Mode extrême</span></div>
+            <a href="reservation.html#salle13" class="room-link" data-cursor="hover">Voir les disponibilités →</a>
+          </div>
+        </article>
+
+        <article class="door tilt" id="saw" data-cursor="look" data-room-key="saw">
+          <div class="door-photo">
+            <span class="tape">Salle 03</span>
+            <span class="stamp"><i class="lit"></i><i class="lit"></i><i class="lit"></i><i class="lit"></i></span>
+            <div class="art">
+              <svg viewBox="0 0 100 100" aria-hidden="true">
+                <path class="draw" d="M30 30 H44 A6 6 0 0 1 56 30 H70 V44 A6 6 0 0 0 70 56 V70 H56 A6 6 0 0 1 44 70 H30 V56 A6 6 0 0 1 30 44 Z"/>
+                <path class="draw hot" d="M20 80 Q40 60 60 78 T96 74"/>
+                <circle class="draw" cx="50" cy="50" r="4"/>
+              </svg>
+              <span class="idx">03</span>
+            </div>
+          </div>
+          <div class="door-body">
+            <h3 class="door-title">SAW</h3>
+            <p class="door-text">Vous voulez jouer à un jeu ? Chaque cadenas a un prix, chaque minute aussi. Sortez ensemble — ou pas du tout.</p>
+            <div class="room-stats"><span class="d-dur">60 min</span><span class="d-players">2–6 joueurs</span><span class="d-mode">Mode extrême</span></div>
+            <a href="reservation.html#saw" class="room-link" data-cursor="hover">Voir les disponibilités →</a>
+          </div>
+        </article>
+
+        <div class="spacer"></div>
+      </div>
+      <div class="corridor-hud"><span>Couloir</span><div class="track"><i id="corridorProg"></i></div><span class="hint">↓ défiler pour avancer</span></div>
+    </div>
+
+  </section>
+</main>
+
+<section class="cta-band">
+  <div class="wrap">
+    <h2>Une salle vous tente ?</h2>
+    <p>Vérifiez les créneaux disponibles et envoyez votre demande en deux minutes.</p>
+    <div class="hero-cta"><a href="reservation.html" class="btn btn-primary magnetic" data-cursor="hover"><span>Voir les disponibilités</span></a></div>
+  </div>
+</section>
+
+<footer id="contact-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div><a href="index.html" class="logo" style="margin-bottom:14px; display:inline-flex;"><img class="logo-img" src="enigma-logo.png" alt="Enigma Escape Games"></a><p>L'escape game grandeur nature de Bietry, Abidjan.</p></div>
+      <div><h5>Adresse</h5><p data-site="address">Bietry<br>Rue des Majorettes, face SMO<br>Abidjan — Côte d'Ivoire</p></div>
+      <div><h5>Contact</h5><p><a href="tel:+2250788020000" data-site="phone">+225 07 88 02 00 00</a><br><a href="mailto:contact@enigma.ci" data-site="email">contact@enigma.ci</a></p><p style="margin-top:10px;"><a href="https://instagram.com/enigma.ci" data-site="instagram" target="_blank" rel="noopener">Instagram</a> · <a href="https://www.facebook.com/enigmaescapegameci" data-site="facebook" target="_blank" rel="noopener">Facebook</a></p></div>
+      <div><h5>Horaires</h5><p data-site="hours">Mer – Ven : 12h – 00h<br>Sam : 12h – 02h<br>Dim : 14h – 22h<br>Lun – Mar : fermé</p></div>
+    </div>
+    <div class="footer-grid" style="grid-template-columns:repeat(4,1fr); margin-bottom:34px;">
+      <div><h5>Le site</h5><p><a href="salles.html">Nos salles</a><br><a href="reservation.html">Réservation</a><br><a href="classement.html">Classement</a></p></div>
+      <div><h5>Découvrir</h5><p><a href="videos.html">Vidéos</a><br><a href="apropos.html">À propos</a><br><a href="apropos.html#faq">Questions fréquentes</a></p></div>
+      <div><h5>Joueurs</h5><p><a href="compte.html">Mon compte</a><br><a href="compte.html">Créer un compte</a></p></div>
+      <div><h5>Nous trouver</h5><p><a href="contact.html">Contact &amp; plan d'accès</a></p></div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Enigma Escape Game — Abidjan, Côte d'Ivoire.</span>
+      <span id="localClock">—</span>
+    </div>
+    <div class="footer-logo" id="footerBig" aria-hidden="true"><img src="enigma-logo.png" alt=""></div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+  window.ENIGMA_SITE = {
+    supabaseUrl:'https://lkklkceakfmufgtzzjwy.supabase.co',
+    supabaseAnonKey:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxra2xrY2Vha2ZtdWZndHp6and5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMjczMTYsImV4cCI6MjA5NjYwMzMxNn0.L-I5xh53vycuAFPr0QsOBAeiIEtG0D1rVIWSGjFvils'
+  };
+</script>
+<script src="assets/enigma.js"></script>
+</body>
+</html>

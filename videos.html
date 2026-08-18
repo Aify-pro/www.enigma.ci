@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vidéos — ENIGMA Escape Game Abidjan</title>
+<meta name="description" content="Les vidéos d'Enigma : coulisses, teasers de salles et retours de joueurs.">
+<meta name="theme-color" content="#05070a">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
+<link rel="apple-touch-icon" href="favicon-180.png">
+<meta property="og:title" content="Vidéos — ENIGMA Escape Game Abidjan">
+<meta property="og:description" content="Les vidéos d'Enigma : coulisses, teasers de salles et retours de joueurs.">
+<meta property="og:image" content="https://enigma.ci/enigma-logo.png">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Michroma&family=Oswald:wght@300;400;500;600&family=Familjen+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/enigma.css">
+</head>
+<body>
+
+<canvas id="webgl"></canvas>
+<div id="fuse"></div>
+<div id="vignette"></div>
+<div id="grain"></div>
+<div id="cursor"><div class="ring"><span class="label">Entrer</span></div><div class="dot"></div></div>
+
+<header class="nav" id="siteNav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo" data-cursor="hover" aria-label="Enigma Escape Games"><img class="logo-img" src="enigma-logo.png" alt="Enigma Escape Games"></a>
+    <nav class="links" id="navLinks">
+      <a href="index.html" data-cursor="hover">Accueil</a>
+      <a href="salles.html" data-cursor="hover">Nos salles</a>
+      <a href="reservation.html" data-cursor="hover">Réservation</a>
+      <a href="classement.html" data-cursor="hover">Classement</a>
+      <a href="videos.html" data-cursor="hover">Vidéos</a>
+      <a href="apropos.html" data-cursor="hover">À propos</a>
+      <a href="contact.html" data-cursor="hover">Contact</a>
+      <a href="compte.html" data-cursor="hover">Mon compte</a>
+    </nav>
+    <div class="nav-right">
+      <div class="chrono" id="chrono" title="Durée d'une partie"><i></i><span id="chronoVal">60:00</span></div>
+      <a href="reservation.html" class="btn btn-primary magnetic" data-cursor="hover"><span>Réserver</span></a>
+      <button class="burger" id="burger" aria-label="Ouvrir le menu" aria-expanded="false"><i></i><i></i></button>
+    </div>
+  </div>
+</header>
+
+<div id="mobileMenu">
+  <a href="index.html">Accueil</a>  <a href="salles.html">Nos salles</a>  <a href="reservation.html">Réservation</a>  <a href="classement.html">Classement</a>  <a href="videos.html">Vidéos</a>  <a href="apropos.html">À propos</a>  <a href="contact.html">Contact</a><a href="compte.html">Mon compte</a>
+  <small data-site="phone">+225 07 88 02 00 00</small>
+</div>
+
+<section class="page-head">
+  <div class="wrap">
+    <p class="crumbs"><a href="index.html">Accueil</a> <span>/</span> <span>Vidéos</span></p>
+    <h1>Vidéos</h1>
+    <p>Teasers, coulisses et sorties de joueurs. Un aperçu de l'intérieur — juste assez pour vous décider.</p>
+  </div>
+</section>
+
+<main id="top">
+  <section id="videos" style="padding-top:70px;">
+    <div class="wrap">
+      <div class="video-grid wide" id="videoGrid"></div>
+    </div>
+  </section>
+
+  <div class="crack"></div>
+
+  <section id="temoignages">
+    <div class="wrap">
+      <p class="eyebrow reveal">Ils en sont sortis</p>
+      <h2 class="section-title lines"><span class="ln"><span>Ce qu'en disent nos joueurs.</span></span></h2>
+      <div class="testi-grid" id="testiGrid"></div>
+    </div>
+  </section>
+</main>
+
+<section class="cta-band">
+  <div class="wrap">
+    <h2>Prêt à y entrer pour de vrai ?</h2>
+    <p>Une salle, une équipe, soixante minutes.</p>
+    <div class="hero-cta"><a href="reservation.html" class="btn btn-primary magnetic" data-cursor="hover"><span>Réserver un créneau</span></a></div>
+  </div>
+</section>
+
+<footer id="contact-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div><a href="index.html" class="logo" style="margin-bottom:14px; display:inline-flex;"><img class="logo-img" src="enigma-logo.png" alt="Enigma Escape Games"></a><p>L'escape game grandeur nature de Bietry, Abidjan.</p></div>
+      <div><h5>Adresse</h5><p data-site="address">Bietry<br>Rue des Majorettes, face SMO<br>Abidjan — Côte d'Ivoire</p></div>
+      <div><h5>Contact</h5><p><a href="tel:+2250788020000" data-site="phone">+225 07 88 02 00 00</a><br><a href="mailto:contact@enigma.ci" data-site="email">contact@enigma.ci</a></p><p style="margin-top:10px;"><a href="https://instagram.com/enigma.ci" data-site="instagram" target="_blank" rel="noopener">Instagram</a> · <a href="https://www.facebook.com/enigmaescapegameci" data-site="facebook" target="_blank" rel="noopener">Facebook</a></p></div>
+      <div><h5>Horaires</h5><p data-site="hours">Mer – Ven : 12h – 00h<br>Sam : 12h – 02h<br>Dim : 14h – 22h<br>Lun – Mar : fermé</p></div>
+    </div>
+    <div class="footer-grid" style="grid-template-columns:repeat(4,1fr); margin-bottom:34px;">
+      <div><h5>Le site</h5><p><a href="salles.html">Nos salles</a><br><a href="reservation.html">Réservation</a><br><a href="classement.html">Classement</a></p></div>
+      <div><h5>Découvrir</h5><p><a href="videos.html">Vidéos</a><br><a href="apropos.html">À propos</a><br><a href="apropos.html#faq">Questions fréquentes</a></p></div>
+      <div><h5>Joueurs</h5><p><a href="compte.html">Mon compte</a><br><a href="compte.html">Créer un compte</a></p></div>
+      <div><h5>Nous trouver</h5><p><a href="contact.html">Contact &amp; plan d'accès</a></p></div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Enigma Escape Game — Abidjan, Côte d'Ivoire.</span>
+      <span id="localClock">—</span>
+    </div>
+    <div class="footer-logo" id="footerBig" aria-hidden="true"><img src="enigma-logo.png" alt=""></div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+  window.ENIGMA_SITE = {
+    supabaseUrl:'https://lkklkceakfmufgtzzjwy.supabase.co',
+    supabaseAnonKey:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxra2xrY2Vha2ZtdWZndHp6and5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMjczMTYsImV4cCI6MjA5NjYwMzMxNn0.L-I5xh53vycuAFPr0QsOBAeiIEtG0D1rVIWSGjFvils'
+  };
+</script>
+<script src="assets/enigma.js"></script>
+</body>
+</html>
