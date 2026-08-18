@@ -72,15 +72,15 @@
     <div class="hero-album" id="heroAlbum"></div>
     <div class="wrap">
       <div class="hero-single">
-        <div class="hero-badge hero-el"><i></i>Bietry, Abidjan — ouvert du mercredi au dimanche</div>
+        <div class="hero-badge hero-el"><i></i><span data-site="hero-badge">Bietry, Abidjan — ouvert du mercredi au dimanche</span></div>
         <h1 class="hero-title" id="heroTitle">
           <span class="split" data-site="hero-t1">Vous êtes</span><br>
           <span class="split fade" data-site="hero-t2">enfermés !</span>
         </h1>
         <p class="hero-sub hero-el" data-site="hero-sub">Soixante minutes, une équipe, une porte verrouillée. On ne vous dira pas ce qu'il y a derrière — vous le découvrirez au moment où il sera trop tard pour reculer.</p>
         <div class="hero-cta hero-el">
-          <a href="reservation.html" class="btn btn-primary magnetic" data-cursor="hover"><span>Réserver un créneau</span></a>
-          <a href="salles.html" class="btn btn-ghost magnetic" data-cursor="hover"><span>Voir les salles</span></a>
+          <a href="reservation.html" class="btn btn-primary magnetic" data-cursor="hover"><span data-site="hero-cta1">Réserver un créneau</span></a>
+          <a href="salles.html" class="btn btn-ghost magnetic" data-cursor="hover"><span data-site="hero-cta2">Voir les salles</span></a>
         </div>
         <div class="hero-meta hero-el">
           <div><span class="num" data-count="3">0</span><span class="lbl">Salles thématiques</span></div>
@@ -94,7 +94,7 @@
   </section>
 
   <div class="ticker" aria-hidden="true">
-    <div class="ticker-track" id="tickerTrack">
+    <div class="ticker-track" id="tickerTrack" data-site="ticker">
       <span>60 minutes chrono</span><span>Salles grandeur nature</span><span>2 à 10 joueurs</span><span>Différents mode de jeu</span>
       <span>Anniversaires &amp; team building</span><span>Bietry, Rue de Majorettes</span><span>Classement des joueurs</span>
     </div>
@@ -103,12 +103,12 @@
   <!-- NOS SALLES (aperçu) -->
   <section id="salles">
     <div class="wrap">
-      <p class="eyebrow reveal">Nos salles</p>
+      <p class="eyebrow reveal" data-site="rooms-eyebrow">Nos salles</p>
       <h2 class="section-title lines">
-        <span class="ln"><span>Trois portes. Aucune ne referme</span></span>
-        <span class="ln"><span>vraiment ce qu'elle cache.</span></span>
+        <span class="ln"><span data-site="rooms-title1">Trois portes. Aucune ne referme</span></span>
+        <span class="ln"><span data-site="rooms-title2">vraiment ce qu'elle cache.</span></span>
       </h2>
-      <p class="section-sub section-lead reveal">Chaque salle est un décor grandeur nature, pensé pour installer le doute avant la peur elle-même. Choisissez la vôtre.</p>
+      <p class="section-sub section-lead reveal" data-site="rooms-subtitle">Chaque salle est un décor grandeur nature, pensé pour installer le doute avant la peur elle-même. Choisissez la vôtre.</p>
 
       <div class="room-cards" id="roomCards">
         <a class="room-card reveal" href="salles.html#immortels" data-cursor="look">
@@ -160,10 +160,10 @@
   <!-- TÉMOIGNAGES -->
   <section id="temoignages">
     <div class="wrap">
-      <p class="eyebrow reveal">Ils en sont sortis</p>
+      <p class="eyebrow reveal" data-site="testi-eyebrow">Ils en sont sortis</p>
       <h2 class="section-title lines">
-        <span class="ln"><span>Ce qu'en disent celles et ceux</span></span>
-        <span class="ln"><span>qui ont trouvé la porte.</span></span>
+        <span class="ln"><span data-site="testi-title1">Ce qu'en disent celles et ceux</span></span>
+        <span class="ln"><span data-site="testi-title2">qui ont trouvé la porte.</span></span>
       </h2>
       <div class="testi-grid" id="testiGrid">
         <figure class="testi-card reveal">
@@ -188,13 +188,13 @@
   <!-- VIDÉOS -->
   <section id="videos">
     <div class="wrap">
-      <p class="eyebrow reveal">En vidéo</p>
+      <p class="eyebrow reveal" data-site="videos-eyebrow">En vidéo</p>
       <h2 class="section-title lines">
-        <span class="ln"><span>Un aperçu de l'intérieur —</span></span>
-        <span class="ln"><span>juste assez pour vous décider.</span></span>
+        <span class="ln"><span data-site="videos-title1">Un aperçu de l'intérieur —</span></span>
+        <span class="ln"><span data-site="videos-title2">juste assez pour vous décider.</span></span>
       </h2>
       <div class="video-grid" id="videoGrid" data-limit="3"></div>
-      <p class="reveal" style="margin-top:30px;"><a href="videos.html" class="btn btn-ghost magnetic" data-cursor="hover"><span>Toutes les vidéos</span></a></p>
+      <p class="reveal" style="margin-top:30px;"><a href="videos.html" class="btn btn-ghost magnetic" data-cursor="hover"><span data-site="videos-cta">Toutes les vidéos</span></a></p>
     </div>
   </section>
 
@@ -202,16 +202,16 @@
 
 <section class="cta-band">
   <div class="wrap">
-    <h2>La porte est encore ouverte.</h2>
-    <p>Choisissez votre salle et votre créneau. Le créneau se bloque à réception de l'acompte.</p>
-    <div class="hero-cta"><a href="reservation.html" class="btn btn-primary magnetic" data-cursor="hover"><span>Réserver maintenant</span></a></div>
+    <h2 data-site="ctaband-title">La porte est encore ouverte.</h2>
+    <p data-site="ctaband-subtitle">Choisissez votre salle et votre créneau. Le créneau se bloque à réception de l'acompte.</p>
+    <div class="hero-cta"><a href="reservation.html" class="btn btn-primary magnetic" data-cursor="hover"><span data-site="ctaband-cta">Réserver maintenant</span></a></div>
   </div>
 </section>
 
 <footer id="contact-footer">
   <div class="wrap">
     <div class="footer-grid">
-      <div><a href="index.html" class="logo" style="margin-bottom:14px; display:inline-flex;"><img class="logo-img" src="enigma-logo.png" alt="Enigma Escape Games"></a><p>L'escape game grandeur nature d'Abidjan.</p></div>
+      <div><a href="index.html" class="logo" style="margin-bottom:14px; display:inline-flex;"><img class="logo-img" src="enigma-logo.png" alt="Enigma Escape Games"></a><p data-site="footer-tagline">L'escape game grandeur nature d'Abidjan.</p></div>
       <div><h5>Adresse</h5><p data-site="address">Bietry<br>Rue des Majorettes, face SMO<br>Abidjan — Côte d'Ivoire</p></div>
       <div><h5>Contact</h5><p><a href="tel:+2250788020000" data-site="phone">+225 07 88 02 00 00</a><br><a href="mailto:contact@enigma.ci" data-site="email">contact@enigma.ci</a></p><p style="margin-top:10px;"><a href="https://instagram.com/enigma.ci" data-site="instagram" target="_blank" rel="noopener">Instagram</a> · <a href="https://www.facebook.com/enigmaescapegameci" data-site="facebook" target="_blank" rel="noopener">Facebook</a></p></div>
       <div><h5>Horaires</h5><p data-site="hours">Mer – Ven : 12h – 00h<br>Sam : 12h – 02h<br>Dim : 14h – 22h<br>Lun – Mar : fermé</p></div>
@@ -223,7 +223,7 @@
       <div><h5>Nous trouver</h5><p><a href="contact.html">Contact &amp; plan d'accès</a></p></div>
     </div>
     <div class="footer-bottom">
-      <span>© 2026 Enigma Escape Game — Abidjan, Côte d'Ivoire.</span>
+      <span data-site="footer-copyright">© 2026 Enigma Escape Game — Abidjan, Côte d'Ivoire.</span>
       <span id="localClock">—</span>
     </div>
     <div class="footer-logo" id="footerBig" aria-hidden="true"><img src="enigma-logo.png" alt=""></div>
