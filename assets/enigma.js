@@ -563,7 +563,7 @@
   })();
 
   /* =====================================================================
-     15. VIDÉOS YOUTUBE (chargement différé de l'iframe)
+     15. VIDÉOS (YouTube / TikTok / Facebook / Instagram — chargement différé)
      ===================================================================== */
   (function videos() {
     const box = $('#videoGrid');
@@ -571,31 +571,83 @@
     const limit = +(box.dataset.limit || 0);
 
     const PLAY = '<span class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>';
+    const PLATFORM_META = {
+      youtube:   { label: 'YouTube',   color: '#c53a3a', icon: '▶' },
+      tiktok:    { label: 'TikTok',    color: '#1f1f24', icon: '♪' },
+      facebook:  { label: 'Facebook',  color: '#1877f2', icon: 'f' },
+      instagram: { label: 'Instagram', color: '#c23670', icon: '◎' }
+    };
+    const metaFor = p => PLATFORM_META[p] || PLATFORM_META.youtube;
 
     function card(v) {
-      const id = esc(v.youtube_id);
-      const thumb = `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+      const platform = v.platform || 'youtube';
+      const meta = metaFor(platform);
+      const autoThumb = platform === 'youtube' && v.video_id ? `https://i.ytimg.com/vi/${esc(v.video_id)}/hqdefault.jpg` : null;
+      const thumb = v.thumbnail_url || autoThumb;
+      const badge = `<span class="video-badge">${meta.icon} ${meta.label}</span>`;
+      const thumbEl = thumb
+        ? `<button class="video-thumb" data-platform="${platform}" data-id="${esc(v.video_id || '')}" data-url="${esc(v.video_url || '')}" style="background-image:url('${thumb}')" aria-label="Lire : ${esc(v.title)}">${badge}${PLAY}</button>`
+        : `<button class="video-thumb ph-thumb" data-platform="${platform}" data-id="${esc(v.video_id || '')}" data-url="${esc(v.video_url || '')}" style="background-color:${meta.color}" aria-label="Lire : ${esc(v.title)}">${badge}<span class="ph-icon">${meta.icon}</span>${PLAY}</button>`;
       return `<article class="video-card reveal">
-        <button class="video-thumb" data-yt="${id}" style="background-image:url('${thumb}')" aria-label="Lire : ${esc(v.title)}">${PLAY}</button>
+        ${thumbEl}
         <div class="cap"><h4>${esc(v.title)}</h4>${v.description ? `<p>${esc(v.description)}</p>` : ''}</div>
       </article>`;
     }
 
+    let tiktokScriptTag = null, instagramScriptTag = null;
+    function reloadEmbedScript(src, prevTag) {
+      if (prevTag) prevTag.remove();
+      const s = document.createElement('script');
+      s.async = true;
+      s.src = src + (src.includes('?') ? '&' : '?') + '_r=' + Date.now();
+      document.body.appendChild(s);
+      return s;
+    }
+
+    function playVideo(btn) {
+      const platform = btn.dataset.platform;
+      const id = btn.dataset.id;
+      const url = btn.dataset.url;
+      const host = document.createElement('div');
+      host.className = 'video-embed-host' + ((platform === 'tiktok' || platform === 'instagram') ? ' vertical' : '');
+
+      if (platform === 'youtube') {
+        const f = document.createElement('iframe');
+        f.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&modestbranding=1`;
+        f.title = 'Vidéo Enigma'; f.allowFullscreen = true;
+        f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+        host.appendChild(f);
+      } else if (platform === 'facebook') {
+        const f = document.createElement('iframe');
+        f.src = `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=false&autoplay=true`;
+        f.title = 'Vidéo Enigma'; f.allowFullscreen = true;
+        f.allow = 'autoplay; encrypted-media; picture-in-picture; web-share';
+        host.appendChild(f);
+      } else if (platform === 'tiktok') {
+        host.innerHTML = `<blockquote class="tiktok-embed" cite="${esc(url)}" style="max-width:100%;min-width:100%;"><section></section></blockquote>`;
+        btn.replaceWith(host);
+        tiktokScriptTag = reloadEmbedScript('https://www.tiktok.com/embed.js', tiktokScriptTag);
+        return;
+      } else if (platform === 'instagram') {
+        host.innerHTML = `<blockquote class="instagram-media" data-instgrm-permalink="${esc(url)}" style="width:100%;margin:0;"></blockquote>`;
+        btn.replaceWith(host);
+        instagramScriptTag = reloadEmbedScript('https://www.instagram.com/embed.js', instagramScriptTag);
+        return;
+      } else {
+        return;
+      }
+      btn.replaceWith(host);
+    }
+
     box.addEventListener('click', e => {
       const b = e.target.closest('.video-thumb'); if (!b) return;
-      const id = b.dataset.yt;
-      const f = document.createElement('iframe');
-      f.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&modestbranding=1`;
-      f.title = 'Vidéo Enigma';
-      f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
-      f.allowFullscreen = true;
-      b.replaceWith(f);
+      playVideo(b);
     });
 
     (async () => {
       if (!sb) { box.closest('section')?.classList.add('hidden'); return; }
       try {
-        let q = sb.from('site_videos').select('title,youtube_id,description').eq('is_published', true).order('sort_order');
+        let q = sb.from('site_videos').select('title,platform,video_id,video_url,thumbnail_url,description').eq('is_published', true).order('sort_order');
         if (limit) q = q.limit(limit);
         const { data } = await q;
         if (!data || !data.length) { box.closest('section')?.classList.add('hidden'); return; }
