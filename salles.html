@@ -67,7 +67,7 @@
       <div class="corridor-track" id="corridorTrack">
         <div class="spacer"></div>
 
-        <article class="door tilt" id="immortels" data-cursor="look" data-room-key="immortels">
+        <article class="door tilt" id="immortels" data-cursor="look" data-room-key="immortels" role="button" tabindex="0">
           <div class="door-photo">
             <span class="tape">Salle 01</span>
             <span class="stamp"><i class="lit"></i><i class="lit"></i><i class="lit"></i><i></i></span>
@@ -89,7 +89,7 @@
           </div>
         </article>
 
-        <article class="door tilt" id="salle13" data-cursor="look" data-room-key="salle13">
+        <article class="door tilt" id="salle13" data-cursor="look" data-room-key="salle13" role="button" tabindex="0">
           <div class="door-photo">
             <span class="tape">Salle 02</span>
             <span class="stamp"><i class="lit"></i><i class="lit"></i><i class="lit"></i><i class="lit"></i></span>
@@ -112,7 +112,7 @@
           </div>
         </article>
 
-        <article class="door tilt" id="saw" data-cursor="look" data-room-key="saw">
+        <article class="door tilt" id="saw" data-cursor="look" data-room-key="saw" role="button" tabindex="0">
           <div class="door-photo">
             <span class="tape">Salle 03</span>
             <span class="stamp"><i class="lit"></i><i class="lit"></i><i class="lit"></i><i class="lit"></i></span>
@@ -170,6 +170,79 @@
     <div class="footer-logo" id="footerBig" aria-hidden="true"><img src="enigma-logo.png" alt=""></div>
   </div>
 </footer>
+
+<div id="roomModal" class="room-modal" aria-hidden="true">
+  <div class="room-modal-backdrop" data-close></div>
+  <div class="room-modal-panel" role="dialog" aria-modal="true" aria-labelledby="rmTitle">
+    <button type="button" class="room-modal-close" data-close aria-label="Fermer">✕</button>
+    <div class="room-modal-cover" id="rmCover">
+      <span class="room-modal-no" id="rmNo">Salle 01</span>
+      <span class="lvl" id="rmLvl"><i class="lit"></i><i class="lit"></i><i class="lit"></i><i></i><i></i></span>
+    </div>
+    <div class="room-modal-body">
+      <h2 id="rmTitle">—</h2>
+      <div class="room-stats"><span class="d-dur">60 min</span><span class="d-players">2–6 joueurs</span><span class="d-mode">Mode extrême</span></div>
+      <div class="room-modal-desc" id="rmDesc"></div>
+    </div>
+    <div class="room-modal-booking">
+      <h3>Réserver cette salle</h3>
+      <div class="booking-panel">
+        <div class="room-tabs" id="roomTabs" role="tablist" aria-label="Choix de la salle">
+          <button class="room-tab active" data-room="immortels" data-cursor="hover">Les Immortels</button>
+          <button class="room-tab" data-room="salle13" data-cursor="hover">Salle 13</button>
+          <button class="room-tab" data-room="saw" data-cursor="hover">SAW</button>
+          <span class="tab-ink" id="tabInk"></span>
+        </div>
+
+        <div class="booking-grid">
+          <div>
+            <label>Choisissez un jour</label>
+            <div class="day-row" id="dayRow"></div>
+            <label>Créneaux disponibles</label>
+            <div class="slots" id="slotRow"></div>
+          </div>
+          <div>
+            <div id="bookingIntro">
+              <label>Récapitulatif</label>
+              <p style="color:var(--fog-dim); font-size:14px;">Sélectionnez un créneau à gauche pour continuer votre demande de réservation.</p>
+            </div>
+            <form class="booking-form" id="bookingForm" novalidate>
+              <div class="recap"><div class="k">Votre créneau</div><div class="v" id="summaryLine">—</div><div class="k" style="margin-top:12px;">Tarif estimé</div><div class="v" id="priceLine" style="color:var(--brass);">—</div></div>
+              <div class="form-row">
+                <div><label for="nom">Nom complet</label><input id="nom" name="nom" autocomplete="name" required><span class="err-msg">Indiquez le nom de la réservation.</span></div>
+                <div><label for="tel">Téléphone</label><input id="tel" name="tel" inputmode="tel" autocomplete="tel" placeholder="07 00 00 00 00" required><span class="err-msg">Un numéro joignable est nécessaire pour l'acompte.</span></div>
+              </div>
+              <div class="form-row">
+                <div><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email" required><span class="err-msg">Vérifiez le format de l'adresse.</span></div>
+                <div><label for="joueurs">Nombre de joueurs</label><select id="joueurs" name="joueurs"><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option></select></div>
+              </div>
+              <div class="form-row">
+                <div><label for="extreme">Mode extrême</label><select id="extreme" name="extreme"><option value="0">Non</option><option value="1">Oui (+ supplément)</option></select></div>
+                <div><label for="msg">Message (facultatif)</label><input id="msg" name="msg" placeholder="Anniversaire, team building…"></div>
+              </div>
+              <div class="form-note">Votre créneau reste <strong>&nbsp;provisoire</strong>. Il se bloque à réception de l'acompte et après validation de l'équipe. Vous recevez la confirmation par téléphone ou par email.</div>
+              <button type="submit" class="btn btn-primary magnetic" data-cursor="hover"><span>Envoyer ma demande</span></button>
+            </form>
+            <div class="confirm-box" id="confirmBox">
+              <div class="seal"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" pathLength="1"/><path d="M20 33 L29 41 L45 24" pathLength="1"/></svg></div>
+              <span class="mark">Demande envoyée</span>
+              <p style="color:var(--fog-dim); font-size:14px;">Demande reçue pour <strong id="confirmDetail" style="color:var(--fog-bright)"></strong>. L'équipe vous rappelle pour l'acompte — le créneau se bloque à ce moment-là.</p>
+              <p style="margin-top:16px;"><button class="btn btn-ghost magnetic" id="againBtn" type="button" data-cursor="hover"><span>Faire une autre demande</span></button></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="process" id="process">
+          <div class="process-line" id="processLine"></div>
+          <div class="process-step on" data-step="1"><span class="pn">01</span><h4>Choix du créneau</h4><p>Vous sélectionnez une salle et un horaire libre.</p></div>
+          <div class="process-step" data-step="2"><span class="pn">02</span><h4>Demande envoyée</h4><p>Vos coordonnées nous arrivent, statut « en attente ».</p></div>
+          <div class="process-step" data-step="3"><span class="pn">03</span><h4>Acompte réglé</h4><p>Nous validons la demande dès réception de l'acompte.</p></div>
+          <div class="process-step" data-step="4"><span class="pn">04</span><h4>Créneau bloqué</h4><p>Le créneau devient indisponible pour les autres clients.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>

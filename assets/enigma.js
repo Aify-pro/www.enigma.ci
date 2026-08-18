@@ -487,6 +487,13 @@
      ===================================================================== */
   const slug = t => String(t).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '');
   const KEYMAP = { lesimmortels: 'immortels', salle13: 'salle13', saw: 'saw' };
+  /* Ordre fixe des 3 salles historiques : sert de clé de repli fiable même si
+     l'admin renomme une salle (ex. "SAW : Le poids du premier choix"), auquel
+     cas le slug du nom complet ne correspondrait plus à KEYMAP. On se base sur
+     le rang (sort_order) plutôt que sur le nom pour ne jamais casser le lien
+     entre les données Supabase et les data-room-key du HTML. */
+  const ROOM_KEY_ORDER = ['immortels', 'salle13', 'saw'];
+  const roomKeyFor = (name, i) => ROOM_KEY_ORDER[i] || KEYMAP[slug(name)] || slug(name);
 
   (function roomsModule() {
     const cards = $('#roomCards'), corridor = $('#corridorTrack');
@@ -499,9 +506,16 @@
         if (!rooms || !rooms.length) return;
         const pub = rooms.filter(r => r.is_published !== false);
 
+        /* Cache global : réutilisé par la fenêtre de détail (modal) plus bas,
+           qu'elle ait fini de charger avant ou après ce module. */
+        const byKey = {};
+        pub.forEach((r, i) => { byKey[roomKeyFor(r.name, i)] = r; });
+        window.ENIGMA_ROOMS_CACHE = byKey;
+        document.dispatchEvent(new CustomEvent('enigma:rooms-loaded', { detail: byKey }));
+
         if (cards) {
           cards.innerHTML = pub.map((r, i) => {
-            const key = KEYMAP[slug(r.name)] || slug(r.name);
+            const key = roomKeyFor(r.name, i);
             const lvl = Array.from({ length: 5 }, (_, k) => `<i class="${k < (r.difficulty || 3) ? 'lit' : ''}"></i>`).join('');
             const bg = r.cover_url ? `style="background-image:url('${encodeURI(r.cover_url)}')"` : '';
             return `<a class="room-card reveal" href="salles.html#${key}" data-cursor="look">
@@ -521,25 +535,122 @@
         }
 
         if (corridor) {
-          pub.forEach(r => {
-            const key = KEYMAP[slug(r.name)] || slug(r.name);
+          pub.forEach((r, i) => {
+            const key = roomKeyFor(r.name, i);
             const door = $(`.door[data-room-key="${key}"]`); if (!door) return;
             door.id = key;
+            door.dataset.roomKey = key;
             const t = door.querySelector('.door-title'); if (t) t.textContent = r.name;
-            const tx = door.querySelector('.door-text'); if (tx && (r.long_desc || r.description)) tx.textContent = r.long_desc || r.description;
+            /* Résumé court (comme sur la page d'accueil) : le descriptif complet
+               ne s'affiche que dans la fenêtre de détail. */
+            const tx = door.querySelector('.door-text'); if (tx && (r.tagline || r.description)) tx.textContent = r.tagline || r.description;
             const dur = door.querySelector('.d-dur'); if (dur) dur.textContent = (r.duration_minutes || 60) + ' min';
             const pl = door.querySelector('.d-players'); if (pl) pl.textContent = `${r.min_players || 2}–${r.max_players || 6} joueurs`;
             const md = door.querySelector('.d-mode'); if (md) { md.textContent = r.theme || 'Mode extrême'; md.style.display = (r.has_extreme_mode || r.theme) ? '' : 'none'; }
             if (r.cover_url) {
               const ph = door.querySelector('.door-photo');
-              if (ph) { ph.style.background = `url(${r.cover_url}) center/cover`; const svg = ph.querySelector('.art svg'); if (svg) svg.style.display = 'none'; }
+              if (ph) { ph.style.background = `url('${encodeURI(r.cover_url)}') center/cover`; const svg = ph.querySelector('.art svg'); if (svg) svg.style.display = 'none'; }
             }
             const st = door.querySelector('.stamp');
-            if (st && r.difficulty) st.innerHTML = Array.from({ length: 5 }, (_, i) => `<i class="${i < r.difficulty ? 'lit' : ''}"></i>`).join('');
+            if (st && r.difficulty) st.innerHTML = Array.from({ length: 5 }, (_, i2) => `<i class="${i2 < r.difficulty ? 'lit' : ''}"></i>`).join('');
           });
         }
       } catch (e) { /* on garde le contenu statique */ }
     })();
+  })();
+
+  /* =====================================================================
+     13bis. FENÊTRE SALLE — descriptif complet + réservation dédiée
+     S'active uniquement si #roomModal est présent (page salles.html).
+     Le lien "salles.html#cle" utilisé par les cartes de l'accueil ouvre
+     directement cette fenêtre au chargement de la page.
+     ===================================================================== */
+  (function roomModal() {
+    const modal = $('#roomModal');
+    if (!modal) return;
+    const panel   = modal.querySelector('.room-modal-panel');
+    const elCover = $('#rmCover'), elTitle = $('#rmTitle'), elDesc = $('#rmDesc'),
+          elNo    = $('#rmNo'),    elLvl   = $('#rmLvl'),
+          elDur   = modal.querySelector('.d-dur'),
+          elPl    = modal.querySelector('.d-players'),
+          elMode  = modal.querySelector('.d-mode');
+
+    let roomsData = window.ENIGMA_ROOMS_CACHE || null;
+    document.addEventListener('enigma:rooms-loaded', e => {
+      roomsData = e.detail;
+      if (modal.classList.contains('open')) {
+        const activeTab = modal.querySelector('.room-tab.active');
+        const key = activeTab && activeTab.dataset.room;
+        const r = key && roomsData[key];
+        if (r) fillFromData(r, Object.keys(roomsData).indexOf(key));
+      }
+    });
+
+    function paragraphs(text) {
+      return String(text || '').split(/\n{2,}/).map(p => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('') || '<p></p>';
+    }
+    function fillFromData(r, index) {
+      elTitle.textContent = r.name;
+      elDesc.innerHTML = paragraphs(r.long_desc || r.description || r.tagline);
+      if (elDur)  elDur.textContent = (r.duration_minutes || 60) + ' min';
+      if (elPl)   elPl.textContent = `${r.min_players || 2}–${r.max_players || 6} joueurs`;
+      if (elMode) { elMode.textContent = r.theme || 'Mode extrême'; elMode.style.display = (r.has_extreme_mode || r.theme) ? '' : 'none'; }
+      if (elLvl)  elLvl.innerHTML = Array.from({ length: 5 }, (_, k) => `<i class="${k < (r.difficulty || 3) ? 'lit' : ''}"></i>`).join('');
+      if (elNo)   elNo.textContent = 'Salle ' + String(index + 1).padStart(2, '0');
+      if (elCover) elCover.style.backgroundImage = r.cover_url ? `url('${encodeURI(r.cover_url)}')` : '';
+    }
+    function fillFromDoor(door) {
+      /* Repli si Supabase est indisponible : on reprend le contenu déjà affiché sur la porte. */
+      elTitle.textContent = door.querySelector('.door-title')?.textContent || '—';
+      elDesc.innerHTML = paragraphs(door.querySelector('.door-text')?.textContent || '');
+      const dur = door.querySelector('.d-dur')?.textContent;   if (elDur && dur) elDur.textContent = dur;
+      const pl  = door.querySelector('.d-players')?.textContent; if (elPl && pl) elPl.textContent = pl;
+      const md  = door.querySelector('.d-mode');
+      if (elMode && md) { elMode.textContent = md.textContent; elMode.style.display = md.style.display; }
+      const st  = door.querySelector('.stamp');
+      if (elLvl && st) elLvl.innerHTML = st.innerHTML;
+      const tape = door.querySelector('.tape')?.textContent;
+      if (elNo && tape) elNo.textContent = tape;
+      const bg  = door.querySelector('.door-photo')?.style.backgroundImage;
+      if (elCover) elCover.style.backgroundImage = bg || '';
+    }
+
+    function open(key) {
+      const r = roomsData && roomsData[key];
+      if (r) fillFromData(r, Object.keys(roomsData).indexOf(key));
+      else { const door = $(`.door[data-room-key="${key}"]`); if (door) fillFromDoor(door); }
+
+      /* Synchronise le module de réservation existant sur la salle choisie. */
+      const tab = modal.querySelector(`.room-tab[data-room="${key}"]`);
+      if (tab) tab.click();
+
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      if (hasGsap && !reduce) gsap.fromTo(panel, { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: .5, ease: 'expo.out' });
+      try { history.replaceState(null, '', '#' + key); } catch (e) {}
+    }
+    function close() {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+
+    modal.addEventListener('click', e => { if (e.target.closest('[data-close]')) close(); });
+    addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) close(); });
+
+    $$('.door[data-room-key]').forEach(door => {
+      door.addEventListener('click', e => { e.preventDefault(); open(door.dataset.roomKey); });
+      door.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(door.dataset.roomKey); }
+      });
+    });
+
+    /* Ouverture directe depuis un lien externe (ex. carte de l'accueil → salles.html#immortels). */
+    const initial = decodeURIComponent(location.hash.slice(1));
+    if (initial && $(`.door[data-room-key="${initial}"]`)) {
+      setTimeout(() => open(initial), 250);
+    }
   })();
 
   /* =====================================================================
@@ -563,7 +674,7 @@
   })();
 
   /* =====================================================================
-     15. VIDÉOS (YouTube / TikTok / Facebook / Instagram — chargement différé)
+     15. VIDÉOS YOUTUBE (chargement différé de l'iframe)
      ===================================================================== */
   (function videos() {
     const box = $('#videoGrid');
@@ -571,83 +682,31 @@
     const limit = +(box.dataset.limit || 0);
 
     const PLAY = '<span class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>';
-    const PLATFORM_META = {
-      youtube:   { label: 'YouTube',   color: '#c53a3a', icon: '▶' },
-      tiktok:    { label: 'TikTok',    color: '#1f1f24', icon: '♪' },
-      facebook:  { label: 'Facebook',  color: '#1877f2', icon: 'f' },
-      instagram: { label: 'Instagram', color: '#c23670', icon: '◎' }
-    };
-    const metaFor = p => PLATFORM_META[p] || PLATFORM_META.youtube;
 
     function card(v) {
-      const platform = v.platform || 'youtube';
-      const meta = metaFor(platform);
-      const autoThumb = platform === 'youtube' && v.video_id ? `https://i.ytimg.com/vi/${esc(v.video_id)}/hqdefault.jpg` : null;
-      const thumb = v.thumbnail_url || autoThumb;
-      const badge = `<span class="video-badge">${meta.icon} ${meta.label}</span>`;
-      const thumbEl = thumb
-        ? `<button class="video-thumb" data-platform="${platform}" data-id="${esc(v.video_id || '')}" data-url="${esc(v.video_url || '')}" style="background-image:url('${thumb}')" aria-label="Lire : ${esc(v.title)}">${badge}${PLAY}</button>`
-        : `<button class="video-thumb ph-thumb" data-platform="${platform}" data-id="${esc(v.video_id || '')}" data-url="${esc(v.video_url || '')}" style="background-color:${meta.color}" aria-label="Lire : ${esc(v.title)}">${badge}<span class="ph-icon">${meta.icon}</span>${PLAY}</button>`;
+      const id = esc(v.youtube_id);
+      const thumb = `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
       return `<article class="video-card reveal">
-        ${thumbEl}
+        <button class="video-thumb" data-yt="${id}" style="background-image:url('${thumb}')" aria-label="Lire : ${esc(v.title)}">${PLAY}</button>
         <div class="cap"><h4>${esc(v.title)}</h4>${v.description ? `<p>${esc(v.description)}</p>` : ''}</div>
       </article>`;
     }
 
-    let tiktokScriptTag = null, instagramScriptTag = null;
-    function reloadEmbedScript(src, prevTag) {
-      if (prevTag) prevTag.remove();
-      const s = document.createElement('script');
-      s.async = true;
-      s.src = src + (src.includes('?') ? '&' : '?') + '_r=' + Date.now();
-      document.body.appendChild(s);
-      return s;
-    }
-
-    function playVideo(btn) {
-      const platform = btn.dataset.platform;
-      const id = btn.dataset.id;
-      const url = btn.dataset.url;
-      const host = document.createElement('div');
-      host.className = 'video-embed-host' + ((platform === 'tiktok' || platform === 'instagram') ? ' vertical' : '');
-
-      if (platform === 'youtube') {
-        const f = document.createElement('iframe');
-        f.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&modestbranding=1`;
-        f.title = 'Vidéo Enigma'; f.allowFullscreen = true;
-        f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
-        host.appendChild(f);
-      } else if (platform === 'facebook') {
-        const f = document.createElement('iframe');
-        f.src = `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=false&autoplay=true`;
-        f.title = 'Vidéo Enigma'; f.allowFullscreen = true;
-        f.allow = 'autoplay; encrypted-media; picture-in-picture; web-share';
-        host.appendChild(f);
-      } else if (platform === 'tiktok') {
-        host.innerHTML = `<blockquote class="tiktok-embed" cite="${esc(url)}" style="max-width:100%;min-width:100%;"><section></section></blockquote>`;
-        btn.replaceWith(host);
-        tiktokScriptTag = reloadEmbedScript('https://www.tiktok.com/embed.js', tiktokScriptTag);
-        return;
-      } else if (platform === 'instagram') {
-        host.innerHTML = `<blockquote class="instagram-media" data-instgrm-permalink="${esc(url)}" style="width:100%;margin:0;"></blockquote>`;
-        btn.replaceWith(host);
-        instagramScriptTag = reloadEmbedScript('https://www.instagram.com/embed.js', instagramScriptTag);
-        return;
-      } else {
-        return;
-      }
-      btn.replaceWith(host);
-    }
-
     box.addEventListener('click', e => {
       const b = e.target.closest('.video-thumb'); if (!b) return;
-      playVideo(b);
+      const id = b.dataset.yt;
+      const f = document.createElement('iframe');
+      f.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&modestbranding=1`;
+      f.title = 'Vidéo Enigma';
+      f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      f.allowFullscreen = true;
+      b.replaceWith(f);
     });
 
     (async () => {
       if (!sb) { box.closest('section')?.classList.add('hidden'); return; }
       try {
-        let q = sb.from('site_videos').select('title,platform,video_id,video_url,thumbnail_url,description').eq('is_published', true).order('sort_order');
+        let q = sb.from('site_videos').select('title,youtube_id,description').eq('is_published', true).order('sort_order');
         if (limit) q = q.limit(limit);
         const { data } = await q;
         if (!data || !data.length) { box.closest('section')?.classList.add('hidden'); return; }
@@ -672,7 +731,7 @@
     const BOOKED = {};
     const DAYS_FR = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
     const state = { room: Object.keys(ROOMS)[0], dayIdx: 0, time: null, days: [] };
-    (function buildDays() { const d = new Date(); let g = 0; while (state.days.length < 5 && g < 30) { const dow = d.getDay(); if (dow !== 1 && dow !== 2) state.days.push(new Date(d)); d.setDate(d.getDate() + 1); g++; } })();
+    (function buildDays() { const d = new Date(); let g = 0; while (state.days.length < 30 && g < 45) { const dow = d.getDay(); if (dow !== 1 && dow !== 2) state.days.push(new Date(d)); d.setDate(d.getDate() + 1); g++; } })();
 
     const bookingIntro = $('#bookingIntro'), confirmBox = $('#confirmBox');
     const summaryLine = $('#summaryLine'), confirmDetail = $('#confirmDetail');
@@ -798,7 +857,7 @@
         Object.keys(ROOMS).forEach(k => delete ROOMS[k]);
         if (tabs) $$('.room-tab').forEach(t => t.remove());
         rooms.forEach((r, i) => {
-          const key = KEYMAP[slug(r.name)] || slug(r.name);
+          const key = roomKeyFor(r.name, i);
           ROOMS[key] = {
             id: r.id, name: r.name, open: true,
             extreme: r.has_extreme_mode ? r.extreme_mode_price_xof : 0,
