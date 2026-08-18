@@ -57,7 +57,7 @@
   <div class="wrap">
     <p class="crumbs"><a href="index.html">Accueil</a> <span>/</span> <span>Nos salles</span></p>
     <h1>Nos salles</h1>
-    <p>Un couloir, trois portes. Faites défiler pour avancer : chaque salle est un décor grandeur nature, conçu pour 2 à 6 joueurs et 60 minutes de chrono.</p>
+    <p>Plusieurs portes, plusieurs univers. Faites défiler et choisissez votre mission : chaque salle vous réserve une expérience unique, des énigmes à résoudre et un défi à relever.</p>
   </div>
 </section>
 <main id="top">
@@ -174,7 +174,7 @@
 <div id="roomModal" class="room-modal" aria-hidden="true">
   <div class="room-modal-backdrop" data-close></div>
   <div class="room-modal-panel" role="dialog" aria-modal="true" aria-labelledby="rmTitle">
-    <button type="button" class="room-modal-close" data-close data-cursor="hover" aria-label="Fermer">✕</button>
+    <button type="button" class="room-modal-close" data-close aria-label="Fermer">✕</button>
     <div class="room-modal-cover" id="rmCover">
       <span class="room-modal-no" id="rmNo">Salle 01</span>
       <span class="lvl" id="rmLvl"><i class="lit"></i><i class="lit"></i><i class="lit"></i><i></i><i></i></span>
@@ -198,13 +198,9 @@
           <div>
             <label>Choisissez un jour</label>
             <div class="day-nav">
-              <button type="button" class="day-arrow" id="dayPrev" data-cursor="hover" aria-label="Jours précédents">
-                <svg viewBox="0 0 24 24"><path d="M15 4 L7 12 L15 20"/></svg>
-              </button>
+              <button type="button" class="day-arrow" id="dayPrev" data-cursor="hover" aria-label="Jours précédents">‹</button>
               <div class="day-row" id="dayRow"></div>
-              <button type="button" class="day-arrow" id="dayNext" data-cursor="hover" aria-label="Jours suivants">
-                <svg viewBox="0 0 24 24"><path d="M9 4 L17 12 L9 20"/></svg>
-              </button>
+              <button type="button" class="day-arrow" id="dayNext" data-cursor="hover" aria-label="Jours suivants">›</button>
             </div>
             <label>Créneaux disponibles</label>
             <div class="slots" id="slotRow"></div>
@@ -222,11 +218,18 @@
               </div>
               <div class="form-row">
                 <div><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email" required><span class="err-msg">Vérifiez le format de l'adresse.</span></div>
-                <div><label for="joueurs">Nombre de joueurs</label><select id="joueurs" name="joueurs"><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option></select></div>
+                <div><label for="equipe">Nom de l'équipe</label><input id="equipe" name="equipe" autocomplete="off" placeholder="Ex. Les Aventuriers" required><span class="err-msg">Indiquez le nom de votre équipe.</span></div>
               </div>
               <div class="form-row">
-                <div><label for="extreme">Mode extrême</label><select id="extreme" name="extreme"><option value="0">Non</option><option value="1">Oui (+ supplément)</option></select></div>
-                <div><label for="msg">Message (facultatif)</label><input id="msg" name="msg" placeholder="Anniversaire, team building…"></div>
+                <div><label for="joueurs">Nombre de joueurs</label><select id="joueurs" name="joueurs"><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option></select></div>
+                <div><label for="mode">Mode de jeu</label><select id="mode" name="mode"><option value="normale" selected>Normale</option><option value="moyen">Moyen</option><option value="extreme">Extreme (+ supplément)</option></select></div>
+              </div>
+              <div class="form-row">
+                <div style="grid-column:1/-1;"><label for="msg">Message (facultatif)</label><input id="msg" name="msg" placeholder="Anniversaire, team building…"></div>
+              </div>
+              <div class="check-field" id="disclaimerField">
+                <label class="check-label"><input type="checkbox" id="disclaimer" name="disclaimer" required> J'accepte les <a href="https://enigma.ci/commander/" target="_blank" rel="noopener">conditions générales de vente</a>.</label>
+                <span class="err-msg">Vous devez accepter les conditions générales de vente pour continuer.</span>
               </div>
               <div class="form-note">Votre créneau reste <strong>&nbsp;provisoire</strong>. Il se bloque à réception de l'acompte et après validation de l'équipe. Vous recevez la confirmation par téléphone ou par email.</div>
               <button type="submit" class="btn btn-primary magnetic" data-cursor="hover"><span>Envoyer ma demande</span></button>
@@ -243,9 +246,8 @@
         <div class="process" id="process">
           <div class="process-line" id="processLine"></div>
           <div class="process-step on" data-step="1"><span class="pn">01</span><h4>Choix du créneau</h4><p>Vous sélectionnez une salle et un horaire libre.</p></div>
-          <div class="process-step" data-step="2"><span class="pn">02</span><h4>Demande envoyée</h4><p>Vos coordonnées nous arrivent, statut « en attente ».</p></div>
-          <div class="process-step" data-step="3"><span class="pn">03</span><h4>Acompte réglé</h4><p>Nous validons la demande dès réception de l'acompte.</p></div>
-          <div class="process-step" data-step="4"><span class="pn">04</span><h4>Créneau bloqué</h4><p>Le créneau devient indisponible pour les autres clients.</p></div>
+          <div class="process-step" data-step="2"><span class="pn">02</span><h4>Validation du disclaimer</h4><p>Vous acceptez nos conditions générales de vente.</p></div>
+          <div class="process-step" data-step="3"><span class="pn">03</span><h4>Demande envoyée</h4><p>Statut « en attente » : le créneau se bloque dès réception et validation de l'acompte.</p></div>
         </div>
       </div>
     </div>
