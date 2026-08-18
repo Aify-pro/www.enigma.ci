@@ -721,7 +721,9 @@
      ===================================================================== */
   (function booking() {
     const dayRow = $('#dayRow'), slotRow = $('#slotRow'), bookingForm = $('#bookingForm');
+    const dayPrev = $('#dayPrev'), dayNext = $('#dayNext');
     if (!dayRow || !slotRow || !bookingForm) return;
+    const DAY_WINDOW = 6; /* nombre de jours affichés à la fois ; navigation par flèches jusqu'à +30 jours */
 
     const ROOMS = {
       immortels: { name: "Les Immortels", times: ["14:00","15:30","17:00","18:30","20:00","21:30"], open: true, prices: { 2:20000,3:27000,4:32000,5:37500,6:42000 }, extreme: 10000 },
@@ -730,7 +732,7 @@
     };
     const BOOKED = {};
     const DAYS_FR = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
-    const state = { room: Object.keys(ROOMS)[0], dayIdx: 0, time: null, days: [] };
+    const state = { room: Object.keys(ROOMS)[0], dayIdx: 0, time: null, days: [], dayWindowStart: 0 };
     (function buildDays() { const d = new Date(); let g = 0; while (state.days.length < 30 && g < 45) { const dow = d.getDay(); if (dow !== 1 && dow !== 2) state.days.push(new Date(d)); d.setDate(d.getDate() + 1); g++; } })();
 
     const bookingIntro = $('#bookingIntro'), confirmBox = $('#confirmBox');
@@ -744,8 +746,14 @@
       hasGsap ? gsap.to(processLine, { scaleX: sx, duration: .8, ease: 'expo.out' }) : (processLine.style.transform = `scaleX(${sx})`);
     }
     function renderDays() {
-      dayRow.innerHTML = state.days.map((d, i) =>
-        `<button type="button" class="day-pill${i === state.dayIdx ? ' active' : ''}" data-i="${i}" data-cursor="hover"><span class="d">${DAYS_FR[d.getDay()]}</span><span class="n">${d.getDate()}</span></button>`).join('');
+      const start = state.dayWindowStart;
+      const visible = state.days.slice(start, start + DAY_WINDOW);
+      dayRow.innerHTML = visible.map((d, li) => {
+        const i = start + li;
+        return `<button type="button" class="day-pill${i === state.dayIdx ? ' active' : ''}" data-i="${i}" data-cursor="hover"><span class="d">${DAYS_FR[d.getDay()]}</span><span class="n">${d.getDate()}</span></button>`;
+      }).join('');
+      if (dayPrev) dayPrev.disabled = start <= 0;
+      if (dayNext) dayNext.disabled = start + DAY_WINDOW >= state.days.length;
     }
     function renderSlots() {
       const room = ROOMS[state.room]; if (!room) return;
@@ -789,6 +797,8 @@
       state.room = tab.dataset.room; moveInk(); resetBooking();
     });
     dayRow.addEventListener('click', e => { const p = e.target.closest('.day-pill'); if (!p) return; state.dayIdx = +p.dataset.i; renderDays(); resetBooking(); });
+    if (dayPrev) dayPrev.addEventListener('click', () => { state.dayWindowStart = Math.max(0, state.dayWindowStart - DAY_WINDOW); renderDays(); });
+    if (dayNext) dayNext.addEventListener('click', () => { state.dayWindowStart = Math.min(Math.max(0, state.days.length - DAY_WINDOW), state.dayWindowStart + DAY_WINDOW); renderDays(); });
     slotRow.addEventListener('click', e => {
       const slot = e.target.closest('.slot'); if (!slot || slot.classList.contains('full')) return;
       state.time = slot.dataset.time;

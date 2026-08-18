@@ -75,7 +75,11 @@
         <div class="booking-grid">
           <div>
             <label>Choisissez un jour</label>
-            <div class="day-row" id="dayRow"></div>
+            <div class="day-nav">
+              <button type="button" class="day-arrow" id="dayPrev" data-cursor="hover" aria-label="Jours précédents">‹</button>
+              <div class="day-row" id="dayRow"></div>
+              <button type="button" class="day-arrow" id="dayNext" data-cursor="hover" aria-label="Jours suivants">›</button>
+            </div>
             <label>Créneaux disponibles</label>
             <div class="slots" id="slotRow"></div>
           </div>
