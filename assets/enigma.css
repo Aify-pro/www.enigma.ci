@@ -334,7 +334,8 @@
   .room-tab.active{color:var(--fog-bright);}
   .room-tab:hover:not(.active){color:var(--fog);}
   .tab-ink{position:absolute; bottom:-1px; height:2px; background:var(--signal); box-shadow:0 0 10px rgba(200,50,60,.6);}
-  .booking-grid{display:grid; grid-template-columns:1fr 1fr; gap:48px;}
+  .booking-grid{display:grid; grid-template-columns:1fr 1fr; gap:48px; min-width:0;}
+  .booking-grid > div{min-width:0;}
   .day-row{display:flex; gap:8px; margin-bottom:26px; flex-wrap:nowrap; overflow-x:auto; overflow-y:hidden; padding-bottom:6px; scroll-snap-type:x proximity; -webkit-overflow-scrolling:touch;}
   .day-row::-webkit-scrollbar{height:4px;}
   .day-row::-webkit-scrollbar-thumb{background:var(--steel-dim);}

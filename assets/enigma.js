@@ -945,9 +945,6 @@
         }
       }
       const { data: st } = await sb.from('site_settings').select('key,value');
-      // Remplace le texte d'un ou plusieurs data-site en une ligne, sans jamais
-      // écraser avec du vide (le texte codé en dur du HTML reste alors affiché).
-      const setText = (sel, val) => { if (val) $$(`[data-site="${sel}"]`).forEach(el => el.textContent = val); };
       (st || []).forEach(r => {
         const v = r.value || {};
         if (r.key === 'hero') {
@@ -956,9 +953,6 @@
           // remplace que si l'animation n'a pas encore eu lieu.
           if (v.title_1) $$('[data-site="hero-t1"]').forEach(el => { if (!el.querySelector('.word')) el.textContent = v.title_1; });
           if (v.title_2) $$('[data-site="hero-t2"]').forEach(el => { if (!el.querySelector('.word')) el.textContent = v.title_2; });
-          setText('hero-badge', v.badge);
-          setText('hero-cta1', v.cta_1);
-          setText('hero-cta2', v.cta_2);
         }
         if (r.key === 'contact') {
           if (v.phone)   $$('[data-site="phone"]').forEach(el => { el.textContent = v.phone; if (el.tagName === 'A') el.href = 'tel:' + v.phone.replace(/\s/g, ''); });
@@ -971,30 +965,6 @@
           const NAMES = { lun:'Lundi', mar:'Mardi', mer:'Mercredi', jeu:'Jeudi', ven:'Vendredi', sam:'Samedi', dim:'Dimanche' };
           const rows = Object.keys(NAMES).filter(k => v[k]).map(k => `${NAMES[k]} : ${esc(v[k])}`).join('<br>');
           if (rows) $$('[data-site="hours"]').forEach(el => el.innerHTML = rows);
-        }
-        if (r.key === 'ticker' && Array.isArray(v.items) && v.items.length) {
-          const track = $('#tickerTrack');
-          if (track) {
-            const html = v.items.map(t => `<span>${esc(t)}</span>`).join('');
-            track.innerHTML = html + html; // dupliqué pour le défilement continu
-          }
-        }
-        if (r.key === 'section_rooms') {
-          setText('rooms-eyebrow', v.eyebrow); setText('rooms-title1', v.title_1);
-          setText('rooms-title2', v.title_2); setText('rooms-subtitle', v.subtitle);
-        }
-        if (r.key === 'section_testi') {
-          setText('testi-eyebrow', v.eyebrow); setText('testi-title1', v.title_1); setText('testi-title2', v.title_2);
-        }
-        if (r.key === 'section_videos') {
-          setText('videos-eyebrow', v.eyebrow); setText('videos-title1', v.title_1);
-          setText('videos-title2', v.title_2); setText('videos-cta', v.cta);
-        }
-        if (r.key === 'cta_band') {
-          setText('ctaband-title', v.title); setText('ctaband-subtitle', v.subtitle); setText('ctaband-cta', v.cta);
-        }
-        if (r.key === 'footer') {
-          setText('footer-tagline', v.tagline); setText('footer-copyright', v.copyright);
         }
       });
     } catch (e) {}
