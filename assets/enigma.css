@@ -52,7 +52,7 @@
   }
 
   /* ============ CURSEUR ============ */
-  #cursor{position:fixed; top:0; left:0; z-index:300; pointer-events:none; display:none;}
+  #cursor{position:fixed; top:0; left:0; z-index:500; pointer-events:none; display:none;}
   body.no-cursor #cursor{display:block;}
   #cursor .dot{position:absolute; width:5px; height:5px; margin:-2.5px 0 0 -2.5px; border-radius:50%; background:var(--fog-bright);}
   #cursor .ring{
@@ -307,7 +307,13 @@
   /* ============ FENÊTRE SALLE (modal descriptif + réservation) ============ */
   .room-modal{position:fixed; inset:0; z-index:400; display:none; align-items:flex-start; justify-content:center; padding:6vh 20px; overflow-y:auto;}
   .room-modal.open{display:flex;}
-  .room-modal-backdrop{position:fixed; inset:0; background:rgba(5,7,10,.92); backdrop-filter:blur(6px);}
+  .room-modal-backdrop{position:fixed; inset:0; background:rgba(5,7,10,.96);}
+  /* Filet de sécurité multi-navigateurs : certains moteurs (Safari/WebKit) rendent mal la
+     combinaison mix-blend-mode (curseur personnalisé) + calques superposés d'une fenêtre
+     modale, ce qui peut faire disparaître visuellement le curseur. On neutralise le blend
+     mode pendant qu'une modale est ouverte pour garantir que le curseur reste visible. */
+  body.modal-open #cursor.hover .ring,
+  body.modal-open #cursor.look .ring{mix-blend-mode:normal; background:var(--signal); opacity:.85;}
   .room-modal-panel{position:relative; z-index:1; width:min(920px,100%); background:var(--navy); border:1px solid var(--line); margin:auto 0;}
   .room-modal-close{position:absolute; top:16px; right:16px; z-index:3; width:38px; height:38px; border:1px solid var(--line); background:rgba(5,7,10,.65); color:var(--fog-bright); cursor:pointer; font-size:15px; line-height:1; display:grid; place-items:center; transition:border-color .25s ease, color .25s ease;}
   .room-modal-close:hover{border-color:var(--signal); color:var(--signal);}
@@ -336,12 +342,23 @@
   .tab-ink{position:absolute; bottom:-1px; height:2px; background:var(--signal); box-shadow:0 0 10px rgba(200,50,60,.6);}
   .booking-grid{display:grid; grid-template-columns:1fr 1fr; gap:48px; min-width:0;}
   .booking-grid > div{min-width:0;}
-  .day-nav{display:flex; align-items:stretch; gap:8px; margin-bottom:26px;}
-  .day-row{flex:1; display:grid; grid-template-columns:repeat(6,1fr); gap:8px; min-width:0;}
-  .day-arrow{flex:0 0 auto; width:34px; border:1px solid var(--line); background:transparent; color:var(--fog); cursor:pointer; font-size:17px; line-height:1; display:grid; place-items:center; transition:border-color .25s ease, color .25s ease, opacity .25s ease;}
-  .day-arrow:hover:not(:disabled){border-color:var(--steel); color:var(--fog-bright);}
-  .day-arrow:disabled{opacity:.25; cursor:not-allowed;}
-  .day-pill{min-width:0; text-align:center; padding:11px 4px; border:1px solid var(--line); cursor:pointer; background:transparent; color:var(--fog-dim); transition:border-color .25s ease, background .25s ease, transform .25s var(--ease);}
+  .day-nav{display:flex; align-items:center; gap:6px; margin-bottom:26px;}
+  .day-row{
+    flex:1; display:flex; gap:8px; min-width:0; overflow-x:auto; overflow-y:hidden;
+    scroll-behavior:smooth; -webkit-overflow-scrolling:touch; cursor:grab;
+    scrollbar-width:none; -ms-overflow-style:none;
+  }
+  .day-row::-webkit-scrollbar{display:none;}
+  .day-row.dragging{cursor:grabbing; scroll-behavior:auto; user-select:none;}
+  .day-arrow{
+    flex:0 0 auto; width:30px; height:56px; border:none; background:transparent; color:var(--signal);
+    cursor:pointer; display:grid; place-items:center; padding:0; transition:opacity .25s ease, transform .2s ease;
+  }
+  .day-arrow svg{width:20px; height:20px; display:block;}
+  .day-arrow svg path{fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke;}
+  .day-arrow:hover:not(:disabled){transform:scale(1.18);}
+  .day-arrow:disabled{opacity:.22; cursor:not-allowed;}
+  .day-pill{flex:0 0 auto; width:62px; min-width:62px; text-align:center; padding:11px 4px; border:1px solid var(--line); cursor:pointer; background:transparent; color:var(--fog-dim); transition:border-color .25s ease, background .25s ease, transform .25s var(--ease);}
   .day-pill .d{display:block; font-family:var(--font-mono); font-size:9px; text-transform:uppercase; letter-spacing:.06em; color:var(--fog-dim);}
   .day-pill .n{display:block; font-family:var(--font-display); font-weight:600; font-size:19px; color:var(--fog-bright); margin-top:4px;}
   .day-pill:hover{border-color:var(--steel-dim); transform:translateY(-2px);}
@@ -447,7 +464,6 @@
   @media (max-width:600px){
     .wrap{padding:0 20px;} .chrono{display:none;} .nav-inner .btn-primary{display:none;}
     .form-row{grid-template-columns:1fr;} .slots{grid-template-columns:repeat(2,1fr);}
-    .day-row{grid-template-columns:repeat(3,1fr); row-gap:8px;}
     .process{grid-template-columns:1fr;} .footer-grid{grid-template-columns:1fr;}
     .hero-meta div{padding:0 16px;} .scroll-cue{display:none;}
     #gate .tumbler{width:44px; height:64px;} #gate .tumbler .col span{height:64px; font-size:30px;}
