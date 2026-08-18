@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mon compte — ENIGMA Escape Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Erode:wght@400;600;700&family=Familjen+Grotesk:wght@400;500;600&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--void:#05070a;--navy:#0c1119;--navy-2:#111826;--line:#1e2733;--line-hot:#2c3a4b;--fog:#aab2bd;--fog-bright:#e9ecf1;--fog-dim:#5b6472;--steel:#7c8899;--brass:#b9a469;--brass-dim:#7d6d3f;--signal:#c8323c;
+    --fd:'Erode',Georgia,serif;--fl:'Familjen Grotesk',sans-serif;--fb:'Inter',sans-serif;--fm:'JetBrains Mono',monospace;--ease:cubic-bezier(.2,.7,.15,1);}
+  *{box-sizing:border-box;} body{margin:0;background:var(--void);color:var(--fog);font-family:var(--fb);line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh;
+    background-image:radial-gradient(ellipse at 20% -10%,rgba(30,39,51,.5),transparent 45%),radial-gradient(ellipse at 90% 110%,rgba(74,17,22,.12),transparent 40%);}
+  a{color:inherit;}
+  header{display:flex;align-items:center;justify-content:space-between;padding:20px 28px;max-width:1180px;margin:0 auto;}
+  header img{height:34px;} header a.back{font-family:var(--fl);font-size:12px;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;color:var(--fog-dim);} header a.back:hover{color:var(--fog-bright);}
+  .wrap{max-width:1180px;margin:0 auto;padding:40px 28px 80px;}
+  .grid{display:grid;grid-template-columns:1fr 1.3fr;gap:40px;align-items:start;} @media(max-width:900px){.grid{grid-template-columns:1fr;}}
+  .eyebrow{font-family:var(--fm);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--fog-dim);display:flex;align-items:center;gap:10px;margin:0 0 12px;} .eyebrow::before{content:"";width:22px;height:1px;background:var(--line-hot);}
+  h1{font-family:var(--fd);font-weight:600;font-size:clamp(34px,4.5vw,54px);line-height:1.05;color:var(--fog-bright);margin:0 0 14px;letter-spacing:-.015em;}
+  p.lead{color:var(--fog-dim);max-width:460px;font-size:15px;}
+  .panel{background:var(--navy);border:1px solid var(--line);padding:32px;position:relative;animation:rise .7s var(--ease) both;}
+  .panel::after{content:"";position:absolute;left:-1px;top:-1px;width:30px;height:30px;border-top:1px solid var(--brass);border-left:1px solid var(--brass);opacity:.8;}
+  @keyframes rise{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
+  .tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:24px;} .tab{font-family:var(--fl);font-size:12px;letter-spacing:.05em;text-transform:uppercase;padding:10px 18px;background:none;border:none;color:var(--fog-dim);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;} .tab.active{color:var(--fog-bright);border-color:var(--brass);}
+  label{font-family:var(--fl);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--fog-dim);display:block;margin-bottom:6px;}
+  input{width:100%;background:#090c11;border:1px solid var(--line);color:var(--fog);padding:12px;font:14px var(--fb);margin-bottom:14px;transition:border-color .25s;} input:focus{border-color:var(--steel);outline:none;}
+  .btn{font-family:var(--fl);font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;padding:13px 26px;border:1px solid var(--fog-bright);background:var(--fog-bright);color:var(--void);cursor:pointer;width:100%;transition:all .3s;} .btn:hover{background:var(--brass);border-color:var(--brass);} .btn.ghost{background:transparent;color:var(--fog);border-color:var(--line-hot);width:auto;} .btn.ghost:hover{color:var(--fog-bright);border-color:var(--steel);background:transparent;}
+  .msg{font-family:var(--fm);font-size:11.5px;margin-top:10px;min-height:16px;} .msg.err{color:var(--signal);} .msg.ok{color:#6fbf8a;}
+  .hidden{display:none!important;}
+  .code{font-family:var(--fd);font-size:44px;letter-spacing:.12em;color:var(--brass);line-height:1;margin:6px 0 4px;}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin:24px 0;} .stats div{background:var(--navy);padding:18px 14px;text-align:center;} .stats b{display:block;font-family:var(--fd);font-size:30px;color:var(--fog-bright);font-weight:600;} .stats span{font-family:var(--fl);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--fog-dim);}
+  .trophies{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:10px;}
+  .trophy{border:1px solid var(--line);padding:18px 14px;text-align:center;position:relative;transition:border-color .3s,transform .3s;} .trophy:hover{transform:translateY(-3px);border-color:var(--brass-dim);}
+  .trophy.locked{opacity:.35;filter:grayscale(1);} .trophy .ic{font-size:26px;} .trophy .t{font-family:var(--fd);font-size:15px;color:var(--fog-bright);margin-top:8px;} .trophy .d{font-size:11px;color:var(--fog-dim);margin-top:3px;}
+  .keys{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;} .keys i{width:22px;height:22px;display:block;background:var(--brass);mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 14a5 5 0 1 1 4.9-4H21v3h-2v2h-2v-2h-2v2h-2v-2h-1.1A5 5 0 0 1 7 14zm0-7a2 2 0 1 0 0 4 2 2 0 0 0 0-4z'/%3E%3C/svg%3E") center/contain no-repeat;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 14a5 5 0 1 1 4.9-4H21v3h-2v2h-2v-2h-2v2h-2v-2h-1.1A5 5 0 0 1 7 14zm0-7a2 2 0 1 0 0 4 2 2 0 0 0 0-4z'/%3E%3C/svg%3E") center/contain no-repeat;animation:rise .5s var(--ease) both;}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px;} th{font-family:var(--fm);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--fog-dim);text-align:left;padding:0 10px 10px;border-bottom:1px solid var(--line);font-weight:500;} td{padding:11px 10px;border-bottom:1px solid var(--line);} td.pt{color:var(--brass);font-family:var(--fm);text-align:right;}
+</style>
+</head>
+<body>
+<header><a href="index.html"><img src="enigma-logo.png" alt="Enigma Escape Games"></a><a class="back" href="index.html">← Retour au site</a></header>
+<div class="wrap grid">
+  <div>
+    <p class="eyebrow">Espace joueur</p>
+    <h1>Vos clés.<br>Votre place au classement.</h1>
+    <p class="lead">Créez votre compte, présentez votre code à l'accueil après chaque partie : chaque clé rapportée vous rapporte des points, et débloque des trophées.</p>
+    <p class="lead" style="font-size:13px;">Un code court vous est attribué à l'inscription. C'est lui que l'hôtesse saisit pour enregistrer vos clés.</p>
+  </div>
+
+  <!-- AUTH -->
+  <div class="panel" id="auth">
+    <div class="tabs"><button class="tab active" data-t="login">Connexion</button><button class="tab" data-t="signup">Créer un compte</button></div>
+    <form id="f-login" onsubmit="return login(event)">
+      <label>Email</label><input id="l-email" type="email" required autocomplete="email">
+      <label>Mot de passe</label><input id="l-pass" type="password" required autocomplete="current-password">
+      <button class="btn" type="submit">Entrer</button>
+      <div class="msg" id="l-msg"></div>
+      <p style="font-size:12px;color:var(--fog-dim);margin-top:14px;"><a href="#" onclick="return forgot()">Mot de passe oublié ?</a></p>
+    </form>
+    <form id="f-signup" class="hidden" onsubmit="return signup(event)">
+      <label>Nom affiché au classement</label><input id="s-name" required maxlength="40" placeholder="Aïcha K.">
+      <label>Téléphone</label><input id="s-phone" inputmode="tel" placeholder="07 00 00 00 00">
+      <label>Email</label><input id="s-email" type="email" required autocomplete="email">
+      <label>Mot de passe (8 caractères min.)</label><input id="s-pass" type="password" required minlength="8" autocomplete="new-password">
+      <button class="btn" type="submit">Créer mon compte</button>
+      <div class="msg" id="s-msg"></div>
+    </form>
+  </div>
+
+  <!-- PROFIL -->
+  <div class="panel hidden" id="profile" style="grid-column:2;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+      <div><p class="eyebrow" style="margin-bottom:4px;">Votre code joueur</p><div class="code" id="p-code">—</div><div style="font-family:var(--fd);font-size:20px;color:var(--fog-bright);" id="p-name"></div></div>
+      <button class="btn ghost" onclick="logout()">Déconnexion</button>
+    </div>
+    <div class="stats"><div><b id="p-points">0</b><span>Points</span></div><div><b id="p-keys">0</b><span>Clés</span></div><div><b id="p-rank">—</b><span>Rang</span></div></div>
+    <p class="eyebrow">Clés rapportées</p><div class="keys" id="p-keylist"></div>
+    <p class="eyebrow" style="margin-top:26px;">Trophées</p><div class="trophies" id="p-trophies"></div>
+    <p class="eyebrow" style="margin-top:26px;">Historique</p>
+    <table><thead><tr><th>Date</th><th>Salle</th><th>Équipe</th><th>Clé</th><th style="text-align:right">Pts</th></tr></thead><tbody id="p-hist"></tbody></table>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const SB_URL='https://lkklkceakfmufgtzzjwy.supabase.co', SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxra2xrY2Vha2ZtdWZndHp6and5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMjczMTYsImV4cCI6MjA5NjYwMzMxNn0.L-I5xh53vycuAFPr0QsOBAeiIEtG0D1rVIWSGjFvils';
+const sb = supabase.createClient(SB_URL, SB_KEY, {auth:{persistSession:true, storageKey:'enigma_player'}});
+const $ = s => document.querySelector(s);
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => { document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active')); t.classList.add('active'); $('#f-login').classList.toggle('hidden', t.dataset.t!=='login'); $('#f-signup').classList.toggle('hidden', t.dataset.t!=='signup'); });
+const TROPHIES = [
+  {id:'first', ic:'🔑', t:'Première clé', d:'1 clé rapportée', test:s=>s.keys>=1},
+  {id:'five',  ic:'🗝️', t:'Trousseau', d:'5 clés', test:s=>s.keys>=5},
+  {id:'ten',   ic:'🏅', t:'Serrurier', d:'10 clés', test:s=>s.keys>=10},
+  {id:'rooms', ic:'🚪', t:'Toutes les portes', d:'3 salles jouées', test:s=>s.rooms>=3},
+  {id:'k1',    ic:'💯', t:'Millier', d:'1 000 points', test:s=>s.points>=1000},
+  {id:'top10', ic:'🏆', t:'Top 10', d:'Dans les 10 premiers', test:s=>s.rank && s.rank<=10},
+];
+
+async function signup(e){ e.preventDefault(); const m=$('#s-msg'); m.className='msg';
+  const {error} = await sb.auth.signUp({email:$('#s-email').value.trim(), password:$('#s-pass').value, options:{data:{display_name:$('#s-name').value.trim(), phone:$('#s-phone').value.trim()}}});
+  if(error){ m.textContent = error.message; m.classList.add('err'); return false; }
+  m.textContent = 'Compte créé. Si un email de confirmation est activé, validez-le puis connectez-vous.'; m.classList.add('ok'); loadProfile(); return false; }
+async function login(e){ e.preventDefault(); const m=$('#l-msg'); m.className='msg';
+  const {error} = await sb.auth.signInWithPassword({email:$('#l-email').value.trim(), password:$('#l-pass').value});
+  if(error){ m.textContent = 'Identifiants incorrects.'; m.classList.add('err'); return false; } loadProfile(); return false; }
+async function forgot(){ const email = $('#l-email').value.trim(); const m=$('#l-msg'); if(!email){ m.textContent='Saisissez votre email d\'abord.'; m.className='msg err'; return false; }
+  await sb.auth.resetPasswordForEmail(email, {redirectTo: location.href}); m.textContent='Email de réinitialisation envoyé (si le compte existe).'; m.className='msg ok'; return false; }
+async function logout(){ await sb.auth.signOut(); $('#profile').classList.add('hidden'); $('#auth').classList.remove('hidden'); }
+
+async function loadProfile(){
+  const {data:{session}} = await sb.auth.getSession(); if(!session) return;
+  const uid = session.user.id;
+  const [{data:p},{data:lb},{data:hist}] = await Promise.all([
+    sb.from('players').select('*').eq('id',uid).maybeSingle(),
+    sb.from('leaderboard_players').select('id,points').limit(500),
+    sb.from('key_finds').select('key_code,points,found_at, game_sessions(session_date,team_name,rooms(name))').eq('player_id',uid).order('found_at',{ascending:false})
+  ]);
+  if(!p){ $('#l-msg').textContent = 'Ce compte n\'est pas un compte joueur.'; $('#l-msg').className='msg err'; return; }
+  $('#auth').classList.add('hidden'); $('#profile').classList.remove('hidden');
+  $('#p-code').textContent = p.player_code || '—'; $('#p-name').textContent = p.display_name;
+  const me = (lb||[]).findIndex(r=>r.id===uid); const rank = me>=0 ? me+1 : null;
+  const points = (hist||[]).reduce((a,k)=>a+k.points,0), rooms = new Set((hist||[]).map(k=>k.game_sessions?.rooms?.name)).size;
+  count('#p-points', points); count('#p-keys', (hist||[]).length); $('#p-rank').textContent = rank ? '#'+rank : '—';
+  $('#p-keylist').innerHTML = (hist||[]).map((_,i)=>`<i style="animation-delay:${i*40}ms"></i>`).join('') || '<span style="font-size:12px;color:var(--fog-dim)">Aucune clé pour l\'instant — à vous de jouer.</span>';
+  const st = {keys:(hist||[]).length, points, rooms, rank};
+  $('#p-trophies').innerHTML = TROPHIES.map(t=>`<div class="trophy ${t.test(st)?'':'locked'}"><div class="ic">${t.ic}</div><div class="t">${t.t}</div><div class="d">${t.d}</div></div>`).join('');
+  $('#p-hist').innerHTML = (hist||[]).map(k=>`<tr><td>${k.game_sessions?.session_date||''}</td><td>${k.game_sessions?.rooms?.name||''}</td><td>${k.game_sessions?.team_name||'—'}</td><td style="font-family:var(--fm);font-size:12px">${k.key_code}</td><td class="pt">+${k.points}</td></tr>`).join('') || '<tr><td colspan="5" style="color:var(--fog-dim)">Aucune partie enregistrée.</td></tr>';
+}
+function count(sel, target){ const el=$(sel); const t0=performance.now(); (function s(t){ const p=Math.min((t-t0)/900,1); el.textContent=Math.round(target*(1-Math.pow(1-p,3))); if(p<1) requestAnimationFrame(s); })(t0); }
+loadProfile();
+</script>
+</body>
+</html>
