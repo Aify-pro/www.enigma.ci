@@ -626,16 +626,13 @@
 
       modal.classList.add('open');
       modal.setAttribute('aria-hidden', 'false');
-      document.body.classList.add('modal-open');
       document.body.style.overflow = 'hidden';
-      document.dispatchEvent(new CustomEvent('enigma:modal-opened'));
       if (hasGsap && !reduce) gsap.fromTo(panel, { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: .5, ease: 'expo.out' });
       try { history.replaceState(null, '', '#' + key); } catch (e) {}
     }
     function close() {
       modal.classList.remove('open');
       modal.setAttribute('aria-hidden', 'true');
-      document.body.classList.remove('modal-open');
       document.body.style.overflow = '';
     }
 
@@ -726,6 +723,7 @@
     const dayRow = $('#dayRow'), slotRow = $('#slotRow'), bookingForm = $('#bookingForm');
     const dayPrev = $('#dayPrev'), dayNext = $('#dayNext');
     if (!dayRow || !slotRow || !bookingForm) return;
+    const DAY_WINDOW = 6; /* nombre de jours affichés à la fois ; navigation par flèches jusqu'à +30 jours */
 
     const ROOMS = {
       immortels: { name: "Les Immortels", times: ["14:00","15:30","17:00","18:30","20:00","21:30"], open: true, prices: { 2:20000,3:27000,4:32000,5:37500,6:42000 }, extreme: 10000 },
@@ -734,7 +732,7 @@
     };
     const BOOKED = {};
     const DAYS_FR = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
-    const state = { room: Object.keys(ROOMS)[0], dayIdx: 0, time: null, days: [] };
+    const state = { room: Object.keys(ROOMS)[0], dayIdx: 0, time: null, days: [], dayWindowStart: 0 };
     (function buildDays() { const d = new Date(); let g = 0; while (state.days.length < 30 && g < 45) { const dow = d.getDay(); if (dow !== 1 && dow !== 2) state.days.push(new Date(d)); d.setDate(d.getDate() + 1); g++; } })();
 
     const bookingIntro = $('#bookingIntro'), confirmBox = $('#confirmBox');
@@ -748,22 +746,15 @@
       hasGsap ? gsap.to(processLine, { scaleX: sx, duration: .8, ease: 'expo.out' }) : (processLine.style.transform = `scaleX(${sx})`);
     }
     function renderDays() {
-      dayRow.innerHTML = state.days.map((d, i) =>
-        `<button type="button" class="day-pill${i === state.dayIdx ? ' active' : ''}" data-i="${i}" data-cursor="hover"><span class="d">${DAYS_FR[d.getDay()]}</span><span class="n">${d.getDate()}</span></button>`).join('');
-      updateDayArrows();
+      const start = state.dayWindowStart;
+      const visible = state.days.slice(start, start + DAY_WINDOW);
+      dayRow.innerHTML = visible.map((d, li) => {
+        const i = start + li;
+        return `<button type="button" class="day-pill${i === state.dayIdx ? ' active' : ''}" data-i="${i}" data-cursor="hover"><span class="d">${DAYS_FR[d.getDay()]}</span><span class="n">${d.getDate()}</span></button>`;
+      }).join('');
+      if (dayPrev) dayPrev.disabled = start <= 0;
+      if (dayNext) dayNext.disabled = start + DAY_WINDOW >= state.days.length;
     }
-    function updateDayArrows() {
-      if (!dayPrev || !dayNext) return;
-      const max = dayRow.scrollWidth - dayRow.clientWidth;
-      dayPrev.disabled = dayRow.scrollLeft <= 2;
-      dayNext.disabled = dayRow.scrollLeft >= max - 2;
-    }
-    /* Le rendu initial peut avoir lieu pendant que la fenêtre modale est encore
-       masquée (display:none), donc dayRow mesure 0×0 et désactiverait la flèche
-       « suivant » à tort. On recalcule dès que la taille réelle est connue
-       (ouverture de la modale, redimensionnement…). */
-    if (window.ResizeObserver) new ResizeObserver(() => updateDayArrows()).observe(dayRow);
-    document.addEventListener('enigma:modal-opened', () => requestAnimationFrame(updateDayArrows));
     function renderSlots() {
       const room = ROOMS[state.room]; if (!room) return;
       if (!room.open) { slotRow.innerHTML = `<div class="no-slot" style="grid-column:1/-1">Cette salle n'est pas encore ouverte à la réservation.</div>`; return; }
@@ -780,10 +771,13 @@
     function label() { const d = state.days[state.dayIdx]; return `${ROOMS[state.room].name} — ${DAYS_FR[d.getDay()]}. ${d.getDate()}, ${state.time}`; }
     function updatePrice() {
       const room = ROOMS[state.room]; if (!room) return;
-      const n = +$('#joueurs').value, ext = $('#extreme').value === '1';
-      const base = room.prices?.[n]; const total = base != null ? base + (ext ? (room.extreme || 0) : 0) : null;
+      const n = +$('#joueurs').value, modeSel = $('#mode'), mode = modeSel?.value || 'normale';
+      const surcharge = mode === 'extreme' ? (room.extreme || 0) : 0;
+      const base = room.prices?.[n]; const total = base != null ? base + surcharge : null;
       $('#priceLine').textContent = total != null ? total.toLocaleString('fr-FR') + ' FCFA' : 'Sur devis';
-      $('#extreme').parentElement.style.display = room.extreme ? '' : 'none';
+      const extremeOpt = modeSel?.querySelector('option[value="extreme"]');
+      if (extremeOpt) extremeOpt.disabled = !room.extreme;
+      if (!room.extreme && mode === 'extreme' && modeSel) modeSel.value = 'normale';
     }
     function show(el) { el.classList.add('show'); if (hasGsap && !reduce) gsap.from(el, { y: 16, opacity: 0, duration: .6, ease: 'expo.out' }); }
     function resetBooking() {
@@ -791,6 +785,7 @@
       if (bookingIntro) bookingIntro.style.display = 'block';
       bookingForm.classList.remove('show');
       if (confirmBox) confirmBox.classList.remove('show');
+      const discField = $('#disclaimerField'); if (discField) discField.classList.remove('err');
       setStep(1); renderSlots();
     }
     function moveInk() {
@@ -805,41 +800,9 @@
       $$('.room-tab').forEach(t => t.classList.remove('active')); tab.classList.add('active');
       state.room = tab.dataset.room; moveInk(); resetBooking();
     });
-    dayRow.addEventListener('click', e => {
-      if (dayRow.dataset.suppressClick) return;
-      const p = e.target.closest('.day-pill'); if (!p) return;
-      state.dayIdx = +p.dataset.i;
-      $$('.day-pill', dayRow).forEach(el => el.classList.toggle('active', el === p));
-      resetBooking();
-    });
-    if (dayPrev) dayPrev.addEventListener('click', () => dayRow.scrollBy({ left: -dayRow.clientWidth * .8, behavior: 'smooth' }));
-    if (dayNext) dayNext.addEventListener('click', () => dayRow.scrollBy({ left: dayRow.clientWidth * .8, behavior: 'smooth' }));
-    dayRow.addEventListener('scroll', updateDayArrows, { passive: true });
-    addEventListener('resize', updateDayArrows);
-
-    /* Glisser les dates à la souris (en plus des flèches et du swipe tactile natif). */
-    (function dayDrag() {
-      let drag = null;
-      dayRow.addEventListener('dragstart', e => e.preventDefault());
-      dayRow.addEventListener('mousedown', e => {
-        if (e.target.closest('.day-pill') && e.button !== 0) return;
-        drag = { startX: e.clientX, startScroll: dayRow.scrollLeft, moved: 0 };
-        dayRow.classList.add('dragging');
-      });
-      addEventListener('mousemove', e => {
-        if (!drag) return;
-        const dx = e.clientX - drag.startX;
-        drag.moved = Math.max(drag.moved, Math.abs(dx));
-        dayRow.scrollLeft = drag.startScroll - dx;
-      });
-      addEventListener('mouseup', () => {
-        if (!drag) return;
-        const wasDrag = drag.moved > 6;
-        drag = null;
-        dayRow.classList.remove('dragging');
-        if (wasDrag) { dayRow.dataset.suppressClick = '1'; setTimeout(() => delete dayRow.dataset.suppressClick, 0); }
-      });
-    })();
+    dayRow.addEventListener('click', e => { const p = e.target.closest('.day-pill'); if (!p) return; state.dayIdx = +p.dataset.i; renderDays(); resetBooking(); });
+    if (dayPrev) dayPrev.addEventListener('click', () => { state.dayWindowStart = Math.max(0, state.dayWindowStart - DAY_WINDOW); renderDays(); });
+    if (dayNext) dayNext.addEventListener('click', () => { state.dayWindowStart = Math.min(Math.max(0, state.days.length - DAY_WINDOW), state.dayWindowStart + DAY_WINDOW); renderDays(); });
     slotRow.addEventListener('click', e => {
       const slot = e.target.closest('.slot'); if (!slot || slot.classList.contains('full')) return;
       state.time = slot.dataset.time;
@@ -852,18 +815,26 @@
       setStep(2);
     });
     $('#joueurs').addEventListener('change', updatePrice);
-    $('#extreme').addEventListener('change', updatePrice);
+    $('#mode').addEventListener('change', updatePrice);
 
     const fields = [
-      { el: $('#nom'),   test: v => v.trim().length >= 2 },
-      { el: $('#tel'),   test: v => v.replace(/\D/g, '').length >= 8 },
-      { el: $('#email'), test: v => /^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(v.trim()) }
+      { el: $('#nom'),    test: v => v.trim().length >= 2 },
+      { el: $('#tel'),    test: v => v.replace(/\D/g, '').length >= 8 },
+      { el: $('#email'),  test: v => /^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(v.trim()) },
+      { el: $('#equipe'), test: v => v.trim().length >= 2 }
     ];
     fields.forEach(f => f.el.addEventListener('input', () => { if (f.test(f.el.value)) f.el.classList.remove('err'); }));
+    const disclaimerEl = $('#disclaimer'), disclaimerField = $('#disclaimerField');
+    if (disclaimerEl) disclaimerEl.addEventListener('change', () => {
+      if (disclaimerEl.checked) { disclaimerField.classList.remove('err'); setStep(2); }
+    });
 
     bookingForm.addEventListener('submit', async e => {
       e.preventDefault(); let ok = true;
       fields.forEach(f => { const good = f.test(f.el.value); f.el.classList.remove('err'); void f.el.offsetWidth; f.el.classList.toggle('err', !good); if (!good && ok) { f.el.focus(); ok = false; } });
+      const discOk = !!(disclaimerEl && disclaimerEl.checked);
+      if (disclaimerField) disclaimerField.classList.toggle('err', !discOk);
+      if (!discOk && ok) { disclaimerEl.focus(); ok = false; }
       if (!ok) return;
       const room = ROOMS[state.room];
       if (sb && room.id) {
@@ -872,7 +843,8 @@
           p_session_date: state.days[state.dayIdx].toISOString().slice(0, 10),
           p_time_slot: state.time,
           p_num_players: +$('#joueurs').value,
-          p_extreme: $('#extreme').value === '1',
+          p_game_mode: $('#mode').value,
+          p_team_name: $('#equipe').value.trim(),
           p_name: $('#nom').value.trim(),
           p_phone: $('#tel').value.trim(),
           p_email: $('#email').value.trim(),
@@ -887,7 +859,7 @@
         gsap.fromTo('.confirm-box .seal circle', { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1, ease: 'power2.inOut' });
         gsap.fromTo('.confirm-box .seal path', { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: .6, delay: .7, ease: 'power2.out' });
       } else $$('.confirm-box .seal circle, .confirm-box .seal path').forEach(p => p.style.strokeDashoffset = 0);
-      setStep(4);
+      setStep(3);
     });
     const again = $('#againBtn');
     if (again) again.addEventListener('click', () => { resetBooking(); bookingForm.reset(); });
@@ -930,6 +902,18 @@
         if (tabs) $$('.room-tab').forEach(t => t.classList.toggle('active', t.dataset.room === state.room));
         state.time = null;
         renderSlots(); moveInk(); updatePrice();
+
+        // Temps réel : dès qu'une réservation est validée/annulée côté backend, les créneaux du site public se mettent à jour.
+        async function refreshBooked() {
+          const { data: res2 } = await sb.from('public_bookings').select('room_id,session_date,time_slot');
+          Object.keys(BOOKED).forEach(k => delete BOOKED[k]);
+          (res2 || []).forEach(b => { const key = Object.keys(ROOMS).find(k => ROOMS[k].id === b.room_id); if (key) BOOKED[`${key}|${b.session_date}|${b.time_slot}`] = true; });
+          renderSlots();
+        }
+        sb.channel('public-availability')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'reservation_requests' }, refreshBooked)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'tickets' }, refreshBooked)
+          .subscribe();
       } catch (e) { console.warn('Supabase indisponible, mode démo', e); }
     })();
   })();
