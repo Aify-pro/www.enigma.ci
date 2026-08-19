@@ -794,11 +794,23 @@
       const target = (prev >= min && prev <= max) ? prev : Math.min(Math.max(min, 4), max);
       sel.value = String(target);
     }
+    /* Calcule le tarif de base pour n joueurs : utilise le palier exact s'il existe
+       dans pricing_rules, sinon extrapole depuis le dernier palier connu en ajoutant
+       le prix « par joueur supplémentaire » (extra_player_price_xof) configuré sur la salle. */
+    function basePriceFor(room, n) {
+      if (!room.prices) return null;
+      if (room.prices[n] != null) return room.prices[n];
+      const known = Object.keys(room.prices).map(Number);
+      if (!known.length || !room.extraPlayerPrice) return null;
+      const top = Math.max(...known);
+      if (n <= top) return room.prices[top]; // sécurité, ne devrait pas arriver
+      return room.prices[top] + (n - top) * room.extraPlayerPrice;
+    }
     function updatePrice() {
       const room = ROOMS[state.room]; if (!room) return;
       const n = +$('#joueurs').value, modeSel = $('#mode'), mode = modeSel?.value || 'normale';
       const surcharge = mode === 'extreme' ? (room.extreme || 0) : 0;
-      const base = room.prices?.[n]; const total = base != null ? base + surcharge : null;
+      const base = basePriceFor(room, n); const total = base != null ? base + surcharge : null;
       $('#priceLine').textContent = total != null ? total.toLocaleString('fr-FR') + ' FCFA' : 'Sur devis';
       const extremeOpt = modeSel?.querySelector('option[value="extreme"]');
       if (extremeOpt) extremeOpt.disabled = !room.extreme;
@@ -952,7 +964,7 @@
       if (!sb) return;
       try {
         const [{ data: rooms, error: e1 }, { data: slots }, { data: prices }, { data: res }] = await Promise.all([
-          sb.from('rooms').select('id,name,description,duration_minutes,min_players,max_players,has_extreme_mode,extreme_mode_price_xof,sort_order').eq('is_active', true).order('sort_order'),
+          sb.from('rooms').select('id,name,description,duration_minutes,min_players,max_players,has_extreme_mode,extreme_mode_price_xof,extra_player_price_xof,sort_order').eq('is_active', true).order('sort_order'),
           sb.from('time_slots').select('room_id,start_time').eq('is_active', true),
           sb.from('pricing_rules').select('room_id,player_count,price_xof').eq('is_active', true),
           sb.from('public_bookings').select('room_id,session_date,time_slot')
@@ -965,6 +977,7 @@
           ROOMS[key] = {
             id: r.id, name: r.name, open: true,
             extreme: r.has_extreme_mode ? r.extreme_mode_price_xof : 0,
+            extraPlayerPrice: r.extra_player_price_xof || 0,
             min: r.min_players, max: r.max_players, dur: r.duration_minutes,
             times: (slots || []).filter(s => s.room_id === r.id).map(s => s.start_time).sort(),
             prices: Object.fromEntries((prices || []).filter(p => p.room_id === r.id).map(p => [p.player_count, p.price_xof]))
