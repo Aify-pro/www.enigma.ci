@@ -728,9 +728,9 @@
     if (!dayRow || !slotRow || !bookingForm) return;
 
     const ROOMS = {
-      immortels: { name: "Les Immortels", times: ["14:00","15:30","17:00","18:30","20:00","21:30"], open: true, prices: { 2:20000,3:27000,4:32000,5:37500,6:42000 }, extreme: 10000 },
-      salle13:   { name: "Salle 13",      times: ["14:30","16:00","17:30","19:00","20:30","22:00"], open: true, prices: { 2:20000,3:27000,4:32000,5:37500,6:42000 }, extreme: 10000 },
-      saw:       { name: "SAW",           times: ["14:00","15:30","17:00","18:30","20:00","21:30"], open: true, prices: { 2:20000,3:27000,4:32000,5:37500,6:42000 }, extreme: 10000 }
+      immortels: { name: "Les Immortels", times: ["14:00","15:30","17:00","18:30","20:00","21:30"], open: true, min: 2, max: 6, prices: { 2:20000,3:27000,4:32000,5:37500,6:42000 }, extreme: 10000 },
+      salle13:   { name: "Salle 13",      times: ["14:30","16:00","17:30","19:00","20:30","22:00"], open: true, min: 2, max: 6, prices: { 2:20000,3:27000,4:32000,5:37500,6:42000 }, extreme: 10000 },
+      saw:       { name: "SAW",           times: ["14:00","15:30","17:00","18:30","20:00","21:30"], open: true, min: 2, max: 6, prices: { 2:20000,3:27000,4:32000,5:37500,6:42000 }, extreme: 10000 }
     };
     const BOOKED = {};
     const DAYS_FR = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
@@ -779,6 +779,21 @@
       if (hasGsap && !reduce) gsap.from('.slot', { y: 12, opacity: 0, duration: .5, stagger: .045, ease: 'expo.out', clearProps: 'all' });
     }
     function label() { const d = state.days[state.dayIdx]; return `${ROOMS[state.room].name} — ${DAYS_FR[d.getDay()]}. ${d.getDate()}, ${state.time}`; }
+    /* Génère les options du sélecteur « Nombre de joueurs » à partir des bornes
+       min_players / max_players configurées pour la salle dans le backend. */
+    function populatePlayers(room) {
+      const sel = $('#joueurs'); if (!sel || !room) return;
+      const min = room.min || 2, max = room.max || 6;
+      const prev = +sel.value || 0;
+      sel.innerHTML = '';
+      for (let n = min; n <= max; n++) {
+        const opt = document.createElement('option');
+        opt.value = String(n); opt.textContent = String(n);
+        sel.appendChild(opt);
+      }
+      const target = (prev >= min && prev <= max) ? prev : Math.min(Math.max(min, 4), max);
+      sel.value = String(target);
+    }
     function updatePrice() {
       const room = ROOMS[state.room]; if (!room) return;
       const n = +$('#joueurs').value, modeSel = $('#mode'), mode = modeSel?.value || 'normale';
@@ -796,7 +811,7 @@
       bookingForm.classList.remove('show');
       if (confirmBox) confirmBox.classList.remove('show');
       const discField = $('#disclaimerField'); if (discField) discField.classList.remove('err');
-      setStep(1); renderSlots();
+      setStep(1); populatePlayers(ROOMS[state.room]); renderSlots(); updatePrice();
     }
     function moveInk() {
       const a = $('.room-tab.active'), ink = $('#tabInk'); if (!a || !ink) return;
@@ -930,7 +945,7 @@
     const again = $('#againBtn');
     if (again) again.addEventListener('click', () => { resetBooking(); bookingForm.reset(); });
 
-    renderDays(); renderSlots(); moveInk(); addEventListener('resize', moveInk);
+    renderDays(); populatePlayers(ROOMS[state.room]); renderSlots(); moveInk(); addEventListener('resize', moveInk); updatePrice();
 
     /* — chargement Supabase — */
     (async () => {
@@ -967,7 +982,7 @@
         state.room = (want && ROOMS[want]) ? want : Object.keys(ROOMS)[0];
         if (tabs) $$('.room-tab').forEach(t => t.classList.toggle('active', t.dataset.room === state.room));
         state.time = null;
-        renderSlots(); moveInk(); updatePrice();
+        populatePlayers(ROOMS[state.room]); renderSlots(); moveInk(); updatePrice();
 
         // Temps réel : dès qu'une réservation est validée/annulée côté backend, les créneaux du site public se mettent à jour.
         async function refreshBooked() {
