@@ -76,9 +76,13 @@
           <div>
             <label>Choisissez un jour</label>
             <div class="day-nav">
-              <button type="button" class="day-arrow" id="dayPrev" data-cursor="hover" aria-label="Jours précédents">‹</button>
+              <button type="button" class="day-arrow" id="dayPrev" data-cursor="hover" aria-label="Jours précédents">
+                <svg viewBox="0 0 24 24"><path d="M15 4 L7 12 L15 20"/></svg>
+              </button>
               <div class="day-row" id="dayRow"></div>
-              <button type="button" class="day-arrow" id="dayNext" data-cursor="hover" aria-label="Jours suivants">›</button>
+              <button type="button" class="day-arrow" id="dayNext" data-cursor="hover" aria-label="Jours suivants">
+                <svg viewBox="0 0 24 24"><path d="M9 4 L17 12 L9 20"/></svg>
+              </button>
             </div>
             <label>Créneaux disponibles</label>
             <div class="slots" id="slotRow"></div>

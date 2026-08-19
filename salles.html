@@ -174,7 +174,7 @@
 <div id="roomModal" class="room-modal" aria-hidden="true">
   <div class="room-modal-backdrop" data-close></div>
   <div class="room-modal-panel" role="dialog" aria-modal="true" aria-labelledby="rmTitle">
-    <button type="button" class="room-modal-close" data-close aria-label="Fermer">✕</button>
+    <button type="button" class="room-modal-close" data-close data-cursor="hover" aria-label="Fermer">✕</button>
     <div class="room-modal-cover" id="rmCover">
       <span class="room-modal-no" id="rmNo">Salle 01</span>
       <span class="lvl" id="rmLvl"><i class="lit"></i><i class="lit"></i><i class="lit"></i><i></i><i></i></span>
@@ -198,9 +198,13 @@
           <div>
             <label>Choisissez un jour</label>
             <div class="day-nav">
-              <button type="button" class="day-arrow" id="dayPrev" data-cursor="hover" aria-label="Jours précédents">‹</button>
+              <button type="button" class="day-arrow" id="dayPrev" data-cursor="hover" aria-label="Jours précédents">
+                <svg viewBox="0 0 24 24"><path d="M15 4 L7 12 L15 20"/></svg>
+              </button>
               <div class="day-row" id="dayRow"></div>
-              <button type="button" class="day-arrow" id="dayNext" data-cursor="hover" aria-label="Jours suivants">›</button>
+              <button type="button" class="day-arrow" id="dayNext" data-cursor="hover" aria-label="Jours suivants">
+                <svg viewBox="0 0 24 24"><path d="M9 4 L17 12 L9 20"/></svg>
+              </button>
             </div>
             <label>Créneaux disponibles</label>
             <div class="slots" id="slotRow"></div>
