@@ -109,17 +109,39 @@
               <div class="form-row">
                 <div style="grid-column:1/-1;"><label for="msg">Message (facultatif)</label><input id="msg" name="msg" placeholder="Anniversaire, team building…"></div>
               </div>
-              <div class="check-field" id="disclaimerField">
-                <label class="check-label"><input type="checkbox" id="disclaimer" name="disclaimer" required> J'accepte les <a href="https://enigma.ci/commander/" target="_blank" rel="noopener">conditions générales de vente</a>.</label>
-                <span class="err-msg">Vous devez accepter les conditions générales de vente pour continuer.</span>
-              </div>
               <div class="form-note">Votre créneau reste <strong>&nbsp;provisoire</strong>. Il se bloque à réception de l'acompte et après validation de l'équipe. Vous recevez la confirmation par téléphone ou par email.</div>
-              <button type="submit" class="btn btn-primary magnetic" data-cursor="hover"><span>Envoyer ma demande</span></button>
+              <button type="submit" class="btn btn-primary magnetic" data-cursor="hover"><span>Continuer</span></button>
             </form>
+            <div class="disclaimer-panel" id="disclaimerPanel">
+              <h3>Conditions générales de vente</h3>
+              <p class="disclaimer-hint">Merci de lire l'intégralité du texte ci-dessous. Le bouton de validation s'active une fois arrivé en bas.</p>
+              <div class="disclaimer-progress"><span id="disclaimerProgress"></span></div>
+              <div class="disclaimer-scroll" id="disclaimerScroll">
+                <div class="disclaimer-text">
+                  <p><em>— Texte provisoire, à remplacer par les CGV définitives d'Enigma Escape Game —</em></p>
+                  <p><strong>Article 1 — Objet</strong><br>Les présentes conditions générales régissent la mise à disposition d'une salle de jeu (« escape game ») par Enigma Escape Game, ci-après « Enigma », à toute personne effectuant une réservation, ci-après « le Client », ainsi qu'aux membres de son équipe.</p>
+                  <p><strong>Article 2 — Réservation et acompte</strong><br>Toute réservation effectuée via le site internet est considérée comme une demande. Elle n'est confirmée et le créneau bloqué qu'après réception et validation par l'équipe d'un acompte de 15 000 FCFA, réglable en espèces, via Wave ou via Orange Money. Le solde est réglé sur place le jour de la séance.</p>
+                  <p><strong>Article 3 — Horaires et retard</strong><br>Le Client s'engage à se présenter au moins 10 minutes avant l'heure réservée. Tout retard supérieur à 15 minutes peut entraîner l'annulation de la séance sans remboursement de l'acompte, la salle suivante devant être libérée pour les clients suivants.</p>
+                  <p><strong>Article 4 — Nombre de joueurs</strong><br>Chaque salle dispose d'un nombre minimum et maximum de joueurs. Le nombre de participants effectivement présents doit correspondre à celui indiqué lors de la réservation, sous peine d'ajustement du tarif sur place.</p>
+                  <p><strong>Article 5 — Annulation et report</strong><br>Toute demande d'annulation ou de report doit être communiquée à l'équipe au moins 24 heures avant la séance. Passé ce délai, l'acompte versé reste acquis à Enigma.</p>
+                  <p><strong>Article 6 — Déroulement du jeu</strong><br>Le jeu se déroule dans une salle fermée à clé pour la durée de la session (60 minutes), en présence d'un maître du jeu qui suit la progression de l'équipe et peut intervenir à tout moment, notamment pour des raisons de sécurité. Le Client peut à tout moment demander l'arrêt de la session et la sortie de la salle.</p>
+                  <p><strong>Article 7 — Sécurité et responsabilité</strong><br>Les salles ne présentent aucun danger physique dans des conditions normales d'utilisation. Le Client s'engage à respecter le matériel et les décors mis à disposition. Toute dégradation volontaire pourra faire l'objet d'une facturation. Enigma ne pourra être tenu responsable des objets personnels perdus, oubliés ou endommagés pendant la séance.</p>
+                  <p><strong>Article 8 — Santé</strong><br>L'activité est déconseillée aux personnes sujettes à la claustrophobie, aux crises d'épilepsie ou souffrant de troubles cardiaques. Les femmes enceintes sont invitées à consulter l'équipe avant de réserver. Le Client est seul responsable de son aptitude à participer à l'activité.</p>
+                  <p><strong>Article 9 — Image</strong><br>Enigma peut être amené à réaliser des photos ou vidéos des équipes pendant ou après la séance, à des fins de communication (réseaux sociaux, site internet). Le Client peut s'y opposer en le signalant à l'équipe avant le début de la séance.</p>
+                  <p><strong>Article 10 — Données personnelles</strong><br>Les informations collectées lors de la réservation (nom, téléphone, email) sont utilisées exclusivement pour la gestion de la réservation et ne sont transmises à aucun tiers.</p>
+                  <p><strong>Article 11 — Contact</strong><br>Pour toute question, l'équipe d'Enigma est joignable au 07 88 02 00 00.</p>
+                  <p class="disclaimer-end">Fin du document.</p>
+                </div>
+              </div>
+              <div class="disclaimer-actions">
+                <button type="button" class="btn btn-ghost magnetic" id="disclaimerBack" data-cursor="hover"><span>Retour</span></button>
+                <button type="button" class="btn btn-primary magnetic" id="disclaimerAccept" data-cursor="hover" disabled><span>J'accepte, envoyer ma demande</span></button>
+              </div>
+            </div>
             <div class="confirm-box" id="confirmBox">
               <div class="seal"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" pathLength="1"/><path d="M20 33 L29 41 L45 24" pathLength="1"/></svg></div>
               <span class="mark">Demande envoyée</span>
-              <p style="color:var(--fog-dim); font-size:14px;">Demande reçue pour <strong id="confirmDetail" style="color:var(--fog-bright)"></strong>. L'équipe vous rappelle pour l'acompte — le créneau se bloque à ce moment-là.</p>
+              <p style="color:var(--fog-dim); font-size:14px;">Demande reçue pour <strong id="confirmDetail" style="color:var(--fog-bright)"></strong>. L'équipe d'Enigma vous contactera. Vous pouvez dès à présent envoyer un acompte de <strong style="color:var(--fog-bright)">15 000 FCFA</strong> en espèces, via Wave ou Orange Money, au <strong style="color:var(--fog-bright)">07 09 00 56 77</strong>, pour valider votre réservation.<br><br>Pour nous contacter : <strong style="color:var(--fog-bright)">07 88 02 00 00</strong>.</p>
               <p style="margin-top:16px;"><button class="btn btn-ghost magnetic" id="againBtn" type="button" data-cursor="hover"><span>Faire une autre demande</span></button></p>
             </div>
           </div>
@@ -128,7 +150,7 @@
         <div class="process" id="process">
           <div class="process-line" id="processLine"></div>
           <div class="process-step on" data-step="1"><span class="pn">01</span><h4>Choix du créneau</h4><p>Vous sélectionnez une salle et un horaire libre.</p></div>
-          <div class="process-step" data-step="2"><span class="pn">02</span><h4>Validation du disclaimer</h4><p>Vous acceptez nos conditions générales de vente.</p></div>
+          <div class="process-step" data-step="2"><span class="pn">02</span><h4>Lecture des conditions</h4><p>Vous lisez et acceptez nos conditions générales de vente.</p></div>
           <div class="process-step" data-step="3"><span class="pn">03</span><h4>Demande envoyée</h4><p>Statut « en attente » : le créneau se bloque dès réception et validation de l'acompte.</p></div>
         </div>
       </div>
