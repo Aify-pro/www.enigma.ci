@@ -734,6 +734,7 @@
     };
     const BOOKED = {};
     const DAYS_FR = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+    const MONTHS_FR = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'];
     const state = { room: Object.keys(ROOMS)[0], dayIdx: 0, time: null, days: [] };
     (function buildDays() { const d = new Date(); let g = 0; while (state.days.length < 30 && g < 45) { const dow = d.getDay(); if (dow !== 1 && dow !== 2) state.days.push(new Date(d)); d.setDate(d.getDate() + 1); g++; } })();
 
@@ -749,7 +750,7 @@
     }
     function renderDays() {
       dayRow.innerHTML = state.days.map((d, i) =>
-        `<button type="button" class="day-pill${i === state.dayIdx ? ' active' : ''}" data-i="${i}" data-cursor="hover"><span class="d">${DAYS_FR[d.getDay()]}</span><span class="n">${d.getDate()}</span></button>`).join('');
+        `<button type="button" class="day-pill${i === state.dayIdx ? ' active' : ''}" data-i="${i}" data-cursor="hover"><span class="d">${DAYS_FR[d.getDay()]}</span><span class="n">${d.getDate()}</span><span class="m">${MONTHS_FR[d.getMonth()]}</span></button>`).join('');
       updateDayArrows();
     }
     function updateDayArrows() {
@@ -855,9 +856,6 @@
       if (!bookingForm.classList.contains('show')) show(bookingForm);
       setStep(2);
     });
-    $('#joueurs').addEventListener('change', updatePrice);
-    $('#mode').addEventListener('change', updatePrice);
-
     const fields = [
       { el: $('#nom'),    test: v => v.trim().length >= 2 },
       { el: $('#tel'),    test: v => v.replace(/\D/g, '').length >= 8 },
@@ -865,18 +863,23 @@
       { el: $('#equipe'), test: v => v.trim().length >= 2 }
     ];
     fields.forEach(f => f.el.addEventListener('input', () => { if (f.test(f.el.value)) f.el.classList.remove('err'); }));
-    const disclaimerEl = $('#disclaimer'), disclaimerField = $('#disclaimerField');
-    if (disclaimerEl) disclaimerEl.addEventListener('change', () => {
-      if (disclaimerEl.checked) { disclaimerField.classList.remove('err'); setStep(2); }
-    });
+    $('#joueurs').addEventListener('change', updatePrice);
+    $('#mode').addEventListener('change', updatePrice);
 
-    bookingForm.addEventListener('submit', async e => {
-      e.preventDefault(); let ok = true;
-      fields.forEach(f => { const good = f.test(f.el.value); f.el.classList.remove('err'); void f.el.offsetWidth; f.el.classList.toggle('err', !good); if (!good && ok) { f.el.focus(); ok = false; } });
-      const discOk = !!(disclaimerEl && disclaimerEl.checked);
-      if (disclaimerField) disclaimerField.classList.toggle('err', !discOk);
-      if (!discOk && ok) { disclaimerEl.focus(); ok = false; }
-      if (!ok) return;
+    const disclaimerPanel = $('#disclaimerPanel'), disclaimerScroll = $('#disclaimerScroll'),
+          disclaimerAccept = $('#disclaimerAccept'), disclaimerBack = $('#disclaimerBack'),
+          disclaimerProgress = $('#disclaimerProgress');
+
+    function updateDisclaimerProgress() {
+      if (!disclaimerScroll) return;
+      const max = disclaimerScroll.scrollHeight - disclaimerScroll.clientHeight;
+      const pct = max > 0 ? Math.min(100, Math.round((disclaimerScroll.scrollTop / max) * 100)) : 100;
+      if (disclaimerProgress) disclaimerProgress.style.width = pct + '%';
+      if (pct >= 98 && disclaimerAccept) disclaimerAccept.disabled = false;
+    }
+    if (disclaimerScroll) disclaimerScroll.addEventListener('scroll', updateDisclaimerProgress, { passive: true });
+
+    async function submitReservation() {
       const room = ROOMS[state.room];
       if (sb && room.id) {
         const { error } = await sb.rpc('site_create_reservation', {
@@ -891,17 +894,39 @@
           p_email: $('#email').value.trim(),
           p_message: $('#msg').value.trim()
         });
-        if (error) { alert('Réservation impossible : ' + (error.message || 'erreur')); return; }
+        if (error) { alert('Réservation impossible : ' + (error.message || 'erreur')); return false; }
       }
       if (confirmDetail) confirmDetail.textContent = label();
-      bookingForm.classList.remove('show');
+      if (disclaimerPanel) disclaimerPanel.classList.remove('show');
       if (confirmBox) show(confirmBox);
       if (hasGsap && !reduce) {
         gsap.fromTo('.confirm-box .seal circle', { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1, ease: 'power2.inOut' });
         gsap.fromTo('.confirm-box .seal path', { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: .6, delay: .7, ease: 'power2.out' });
       } else $$('.confirm-box .seal circle, .confirm-box .seal path').forEach(p => p.style.strokeDashoffset = 0);
       setStep(3);
+      return true;
+    }
+
+    bookingForm.addEventListener('submit', e => {
+      e.preventDefault(); let ok = true;
+      fields.forEach(f => { const good = f.test(f.el.value); f.el.classList.remove('err'); void f.el.offsetWidth; f.el.classList.toggle('err', !good); if (!good && ok) { f.el.focus(); ok = false; } });
+      if (!ok) return;
+      /* Formulaire valide : on passe à la lecture obligatoire des CGV avant tout envoi. */
+      bookingForm.classList.remove('show');
+      if (disclaimerAccept) disclaimerAccept.disabled = true;
+      if (disclaimerScroll) disclaimerScroll.scrollTop = 0;
+      if (disclaimerProgress) disclaimerProgress.style.width = '0%';
+      if (disclaimerPanel) show(disclaimerPanel);
+      updateDisclaimerProgress();
+      setStep(2);
     });
+    if (disclaimerBack) disclaimerBack.addEventListener('click', () => {
+      if (disclaimerPanel) disclaimerPanel.classList.remove('show');
+      if (!bookingForm.classList.contains('show')) show(bookingForm);
+      setStep(1);
+    });
+    if (disclaimerAccept) disclaimerAccept.addEventListener('click', () => { if (!disclaimerAccept.disabled) submitReservation(); });
+
     const again = $('#againBtn');
     if (again) again.addEventListener('click', () => { resetBooking(); bookingForm.reset(); });
 

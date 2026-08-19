@@ -376,6 +376,7 @@
   .day-pill{flex:0 0 auto; width:62px; min-width:62px; text-align:center; padding:11px 4px; border:1px solid var(--line); cursor:pointer; background:transparent; color:var(--fog-dim); transition:border-color .25s ease, background .25s ease, transform .25s var(--ease);}
   .day-pill .d{display:block; font-family:var(--font-mono); font-size:9px; text-transform:uppercase; letter-spacing:.06em; color:var(--fog-dim);}
   .day-pill .n{display:block; font-family:var(--font-display); font-weight:600; font-size:19px; color:var(--fog-bright); margin-top:4px;}
+  .day-pill .m{display:block; font-family:var(--font-mono); font-size:8px; text-transform:uppercase; letter-spacing:.05em; color:var(--fog-dim); margin-top:2px;}
   .day-pill:hover{border-color:var(--steel-dim); transform:translateY(-2px);}
   .day-pill.active{border-color:var(--steel); background:rgba(124,136,153,.08);}
   .slots{display:grid; grid-template-columns:repeat(3,1fr); gap:10px;}
@@ -408,6 +409,25 @@
   .check-field.err .check-label{color:var(--signal);}
   .check-field .err-msg{display:none;}
   .check-field.err .err-msg{display:block;}
+  .disclaimer-panel{display:none;}
+  .disclaimer-panel.show{display:block;}
+  .disclaimer-panel h3{font-family:var(--font-label); font-weight:600; font-size:15px; color:var(--fog-bright); margin:0 0 6px;}
+  .disclaimer-hint{font-size:12.5px; color:var(--fog-dim); margin:0 0 16px;}
+  .disclaimer-scroll{
+    position:relative; max-height:280px; overflow-y:auto; border:1px solid var(--line); background:var(--void-2);
+    padding:18px 20px; margin-bottom:6px;
+  }
+  .disclaimer-scroll::-webkit-scrollbar{width:6px;}
+  .disclaimer-scroll::-webkit-scrollbar-thumb{background:var(--steel-dim);}
+  .disclaimer-scroll::-webkit-scrollbar-track{background:transparent;}
+  .disclaimer-text{font-size:12.5px; line-height:1.75; color:var(--fog-dim);}
+  .disclaimer-text p{margin:0 0 14px;}
+  .disclaimer-text strong{color:var(--fog-bright); font-weight:600;}
+  .disclaimer-text .disclaimer-end{text-align:center; font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:.1em; color:var(--steel-dim); margin-top:20px;}
+  .disclaimer-progress{height:2px; background:var(--line); margin-bottom:20px; overflow:hidden;}
+  .disclaimer-progress span{display:block; height:100%; width:0%; background:var(--signal); transition:width .15s ease;}
+  .disclaimer-actions{display:flex; gap:12px; justify-content:flex-end; margin-top:20px;}
+  .disclaimer-actions .btn-primary:disabled{opacity:.35; cursor:not-allowed; pointer-events:none;}
   .confirm-box{display:none; text-align:center; padding:34px 10px;}
   .confirm-box.show{display:block;}
   .confirm-box .seal{width:64px; height:64px; margin:0 auto 18px; position:relative;}
