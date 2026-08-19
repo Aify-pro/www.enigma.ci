@@ -628,6 +628,7 @@
       modal.setAttribute('aria-hidden', 'false');
       document.body.classList.add('modal-open');
       document.body.style.overflow = 'hidden';
+      if (lenis) lenis.stop(); // libère la molette pour le défilement natif à l'intérieur de la modale
       document.dispatchEvent(new CustomEvent('enigma:modal-opened'));
       if (hasGsap && !reduce) gsap.fromTo(panel, { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: .5, ease: 'expo.out' });
       try { history.replaceState(null, '', '#' + key); } catch (e) {}
@@ -637,6 +638,7 @@
       modal.setAttribute('aria-hidden', 'true');
       document.body.classList.remove('modal-open');
       document.body.style.overflow = '';
+      if (lenis) lenis.start();
     }
 
     modal.addEventListener('click', e => { if (e.target.closest('[data-close]')) close(); });
