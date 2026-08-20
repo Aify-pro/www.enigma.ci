@@ -730,15 +730,30 @@
     if (!dayRow || !slotRow || !bookingForm) return;
 
     const ROOMS = {
-      immortels: { name: "Les Immortels", times: ["14:00","15:30","17:00","18:30","20:00","21:30"], open: true, min: 2, max: 6, prices: { 2:20000,3:27000,4:32000,5:37500,6:42000 }, extreme: 10000 },
-      salle13:   { name: "Salle 13",      times: ["14:30","16:00","17:30","19:00","20:30","22:00"], open: true, min: 2, max: 6, prices: { 2:20000,3:27000,4:32000,5:37500,6:42000 }, extreme: 10000 },
-      saw:       { name: "SAW",           times: ["14:00","15:30","17:00","18:30","20:00","21:30"], open: true, min: 2, max: 6, prices: { 2:20000,3:27000,4:32000,5:37500,6:42000 }, extreme: 10000 }
+      immortels: { name: "Les Immortels", times: ["14:00","15:30","17:00","18:30","20:00","21:30"], timeDays: null, open: true, min: 2, max: 6, prices: { 2:20000,3:27000,4:32000,5:37500,6:42000 }, extreme: 10000 },
+      salle13:   { name: "Salle 13",      times: ["14:30","16:00","17:30","19:00","20:30","22:00"], timeDays: null, open: true, min: 2, max: 6, prices: { 2:20000,3:27000,4:32000,5:37500,6:42000 }, extreme: 10000 },
+      saw:       { name: "SAW",           times: ["14:00","15:30","17:00","18:30","20:00","21:30"], timeDays: null, open: true, min: 2, max: 6, prices: { 2:20000,3:27000,4:32000,5:37500,6:42000 }, extreme: 10000 }
     };
     const BOOKED = {};
     const DAYS_FR = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
     const MONTHS_FR = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'];
+    /* Chaque créneau (par salle) précise désormais lui-même sur quels jours il est
+       proposé — géré depuis l'admin (table time_slots.days_of_week, 0=Dim...6=Sam,
+       comme Date.getDay()). room.timeDays === null signifie "pas de restriction"
+       (mode démo hors-ligne, avant chargement Supabase). */
+    function isTimeAvailableOnDay(room, t, dow) {
+      if (!room.timeDays) return true;
+      const days = room.timeDays[t];
+      return !!days && days.includes(dow);
+    }
     const state = { room: Object.keys(ROOMS)[0], dayIdx: 0, time: null, days: [] };
-    (function buildDays() { const d = new Date(); let g = 0; while (state.days.length < 30 && g < 45) { const dow = d.getDay(); if (dow !== 1 && dow !== 2) state.days.push(new Date(d)); d.setDate(d.getDate() + 1); g++; } })();
+    let CLOSED_DAYS = new Set([1, 2]); // valeur de secours (Lun/Mar) avant chargement Supabase
+    function buildDays() {
+      const out = []; const d = new Date(); let g = 0;
+      while (out.length < 30 && g < 45) { if (!CLOSED_DAYS.has(d.getDay())) out.push(new Date(d)); d.setDate(d.getDate() + 1); g++; }
+      return out;
+    }
+    state.days = buildDays();
     /* Heure locale d'Abidjan (source unique de vérité pour "maintenant"), afin
        qu'un créneau dont l'heure de début est déjà passée devienne inaccessible
        — quel que soit le fuseau horaire de l'appareil du client. */
@@ -786,9 +801,12 @@
       const room = ROOMS[state.room]; if (!room) return;
       if (!room.open) { slotRow.innerHTML = `<div class="no-slot" style="grid-column:1/-1">Cette salle n'est pas encore ouverte à la réservation.</div>`; return; }
       const seed = state.dayIdx * 3 + state.room.length;
-      const dISO = state.days[state.dayIdx].toISOString().slice(0, 10);
-      if (!room.times.length) { slotRow.innerHTML = `<div class="no-slot" style="grid-column:1/-1">Aucun créneau configuré pour cette salle.</div>`; return; }
-      slotRow.innerHTML = room.times.map((t, i) => {
+      const dayDate = state.days[state.dayIdx];
+      const dISO = dayDate.toISOString().slice(0, 10);
+      const dow = dayDate.getDay();
+      const timesForDay = room.times.filter(t => isTimeAvailableOnDay(room, t, dow));
+      if (!timesForDay.length) { slotRow.innerHTML = `<div class="no-slot" style="grid-column:1/-1">Fermé ce jour-là.</div>`; return; }
+      slotRow.innerHTML = timesForDay.map((t, i) => {
         const full = room.id ? !!BOOKED[`${state.room}|${dISO}|${t}`] : ((i * 7 + seed) % 5 === 0);
         const past = isSlotPast(dISO, t);
         const unavailable = full || past;
@@ -995,23 +1013,32 @@
     (async () => {
       if (!sb) return;
       try {
-        const [{ data: rooms, error: e1 }, { data: slots }, { data: prices }, { data: res }] = await Promise.all([
+        const [{ data: rooms, error: e1 }, { data: slots }, { data: prices }, { data: res }, { data: hours }] = await Promise.all([
           sb.from('rooms').select('id,name,description,duration_minutes,min_players,max_players,has_extreme_mode,extreme_mode_price_xof,extra_player_price_xof,sort_order').eq('is_active', true).order('sort_order'),
-          sb.from('time_slots').select('room_id,start_time').eq('is_active', true),
+          sb.from('time_slots').select('room_id,start_time,days_of_week').eq('is_active', true),
           sb.from('pricing_rules').select('room_id,player_count,price_xof').eq('is_active', true),
-          sb.from('public_bookings').select('room_id,session_date,time_slot')
+          sb.from('public_bookings').select('room_id,session_date,time_slot'),
+          sb.from('business_hours').select('day_of_week,is_closed')
         ]);
         if (e1 || !rooms || !rooms.length) return;
+        if (hours && hours.length) {
+          const newClosed = new Set(hours.filter(h => h.is_closed).map(h => h.day_of_week));
+          const changed = newClosed.size !== CLOSED_DAYS.size || [...newClosed].some(d => !CLOSED_DAYS.has(d));
+          CLOSED_DAYS = newClosed;
+          if (changed) { state.days = buildDays(); state.dayIdx = 0; }
+        }
         Object.keys(ROOMS).forEach(k => delete ROOMS[k]);
         if (tabs) $$('.room-tab').forEach(t => t.remove());
         rooms.forEach((r, i) => {
           const key = roomKeyFor(r.name, i);
+          const roomSlots = (slots || []).filter(s => s.room_id === r.id);
           ROOMS[key] = {
             id: r.id, name: r.name, open: true,
             extreme: r.has_extreme_mode ? r.extreme_mode_price_xof : 0,
             extraPlayerPrice: r.extra_player_price_xof || 0,
             min: r.min_players, max: r.max_players, dur: r.duration_minutes,
-            times: (slots || []).filter(s => s.room_id === r.id).map(s => s.start_time).sort(),
+            times: roomSlots.map(s => s.start_time).sort(),
+            timeDays: Object.fromEntries(roomSlots.map(s => [s.start_time, s.days_of_week || []])),
             prices: Object.fromEntries((prices || []).filter(p => p.room_id === r.id).map(p => [p.player_count, p.price_xof]))
           };
           if (tabs) {
@@ -1027,7 +1054,7 @@
         state.room = (want && ROOMS[want]) ? want : Object.keys(ROOMS)[0];
         if (tabs) $$('.room-tab').forEach(t => t.classList.toggle('active', t.dataset.room === state.room));
         state.time = null;
-        populatePlayers(ROOMS[state.room]); renderSlots(); moveInk(); updatePrice();
+        populatePlayers(ROOMS[state.room]); renderDays(); renderSlots(); moveInk(); updatePrice();
 
         // Temps réel : dès qu'une réservation est validée/annulée côté backend, les créneaux du site public se mettent à jour.
         async function refreshBooked() {
