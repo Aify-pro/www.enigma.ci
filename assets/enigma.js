@@ -739,6 +739,21 @@
     const MONTHS_FR = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'];
     const state = { room: Object.keys(ROOMS)[0], dayIdx: 0, time: null, days: [] };
     (function buildDays() { const d = new Date(); let g = 0; while (state.days.length < 30 && g < 45) { const dow = d.getDay(); if (dow !== 1 && dow !== 2) state.days.push(new Date(d)); d.setDate(d.getDate() + 1); g++; } })();
+    /* Heure locale d'Abidjan (source unique de vérité pour "maintenant"), afin
+       qu'un créneau dont l'heure de début est déjà passée devienne inaccessible
+       — quel que soit le fuseau horaire de l'appareil du client. */
+    function abidjanNow() {
+      const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Abidjan', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date());
+      const get = t => parts.find(p => p.type === t).value;
+      return { iso: `${get('year')}-${get('month')}-${get('day')}`, minutes: (+get('hour')) * 60 + (+get('minute')) };
+    }
+    function timeToMinutes(t) { const [h, m] = t.split(':').map(Number); return h * 60 + m; }
+    /* Un créneau est "passé" dès que son heure de début est atteinte ou dépassée,
+       pour le jour sélectionné s'il s'agit d'aujourd'hui. */
+    function isSlotPast(dISO, t) {
+      const now = abidjanNow();
+      return dISO === now.iso && timeToMinutes(t) <= now.minutes;
+    }
 
     const bookingIntro = $('#bookingIntro'), confirmBox = $('#confirmBox');
     const summaryLine = $('#summaryLine'), confirmDetail = $('#confirmDetail');
@@ -775,8 +790,11 @@
       if (!room.times.length) { slotRow.innerHTML = `<div class="no-slot" style="grid-column:1/-1">Aucun créneau configuré pour cette salle.</div>`; return; }
       slotRow.innerHTML = room.times.map((t, i) => {
         const full = room.id ? !!BOOKED[`${state.room}|${dISO}|${t}`] : ((i * 7 + seed) % 5 === 0);
+        const past = isSlotPast(dISO, t);
+        const unavailable = full || past;
         const sel = (state.time === t) ? ' selected' : '';
-        return `<button type="button" class="slot${full ? ' full' : ''}${sel}" data-time="${t}" data-cursor="hover"${full ? ' disabled aria-disabled="true"' : ''}><span class="dot"></span>${t}</button>`;
+        const title = past && !full ? ' title="Créneau déjà passé"' : (full ? ' title="Créneau complet"' : '');
+        return `<button type="button" class="slot${unavailable ? ' full' : ''}${sel}" data-time="${t}" data-cursor="hover"${unavailable ? ' disabled aria-disabled="true"' : ''}${title}><span class="dot"></span>${t}</button>`;
       }).join('');
       if (hasGsap && !reduce) gsap.from('.slot', { y: 12, opacity: 0, duration: .5, stagger: .045, ease: 'expo.out', clearProps: 'all' });
     }
@@ -960,6 +978,18 @@
     if (again) again.addEventListener('click', () => { resetBooking(); bookingForm.reset(); });
 
     renderDays(); populatePlayers(ROOMS[state.room]); renderSlots(); moveInk(); addEventListener('resize', moveInk); updatePrice();
+
+    /* Vérifie chaque minute si le créneau sélectionné (ou affiché) vient de passer,
+       pour désactiver l'affichage sans attendre une action de l'utilisateur ou un
+       événement Realtime. Si le créneau choisi par le client devient indisponible
+       entre-temps, on le désélectionne pour l'empêcher de valider une réservation
+       sur une heure déjà entamée. */
+    setInterval(() => {
+      const d = state.days[state.dayIdx]; if (!d) return;
+      const dISO = d.toISOString().slice(0, 10);
+      if (state.time && isSlotPast(dISO, state.time)) state.time = null;
+      renderSlots();
+    }, 30000);
 
     /* — chargement Supabase — */
     (async () => {
