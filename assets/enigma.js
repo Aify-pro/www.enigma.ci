@@ -933,16 +933,66 @@
 
     const disclaimerPanel = $('#disclaimerPanel'), disclaimerScroll = $('#disclaimerScroll'),
           disclaimerAccept = $('#disclaimerAccept'), disclaimerBack = $('#disclaimerBack'),
-          disclaimerProgress = $('#disclaimerProgress');
+          disclaimerProgress = $('#disclaimerProgress'), disclaimerViewport = $('#disclaimerViewport'),
+          disclaimerUp = $('#disclaimerUp'), disclaimerDown = $('#disclaimerDown');
 
     function updateDisclaimerProgress() {
       if (!disclaimerScroll) return;
       const max = disclaimerScroll.scrollHeight - disclaimerScroll.clientHeight;
-      const pct = max > 0 ? Math.min(100, Math.round((disclaimerScroll.scrollTop / max) * 100)) : 100;
+      const top = disclaimerScroll.scrollTop;
+      const pct = max > 0 ? Math.min(100, Math.round((top / max) * 100)) : 100;
       if (disclaimerProgress) disclaimerProgress.style.width = pct + '%';
       if (pct >= 98 && disclaimerAccept) disclaimerAccept.disabled = false;
+      /* Etat des commandes de defilement + voile de bas de zone. */
+      if (disclaimerUp) disclaimerUp.disabled = top <= 2;
+      if (disclaimerDown) disclaimerDown.disabled = max <= 0 || top >= max - 2;
+      if (disclaimerViewport) disclaimerViewport.classList.toggle('at-end', max <= 0 || top >= max - 8);
     }
     if (disclaimerScroll) disclaimerScroll.addEventListener('scroll', updateDisclaimerProgress, { passive: true });
+
+    /* --- Commandes de defilement des CGV ---------------------------------
+       La molette est rendue au navigateur via data-lenis-prevent sur la zone.
+       Clic = une "page" en douceur, maintien = defilement continu.          */
+    (function initDisclaimerNav() {
+      if (!disclaimerScroll || (!disclaimerUp && !disclaimerDown)) return;
+      let holdRaf = null, holdTimer = null, didHold = false;
+
+      const page = dir => {
+        const step = Math.max(80, Math.round(disclaimerScroll.clientHeight * 0.82));
+        disclaimerScroll.scrollBy({ top: dir * step, behavior: reduce ? 'auto' : 'smooth' });
+      };
+      const runHold = dir => {
+        disclaimerScroll.scrollTop += dir * 10;
+        holdRaf = requestAnimationFrame(() => runHold(dir));
+      };
+      const stopHold = () => {
+        if (holdRaf) { cancelAnimationFrame(holdRaf); holdRaf = null; }
+        if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+      };
+
+      const bind = (btn, dir) => {
+        if (!btn) return;
+        btn.addEventListener('pointerdown', e => {
+          if (e.button !== undefined && e.button !== 0) return;
+          didHold = false;
+          holdTimer = setTimeout(() => { didHold = true; runHold(dir); }, 320);
+        });
+        btn.addEventListener('click', () => { if (didHold) { didHold = false; return; } page(dir); });
+        ['pointerup', 'pointerleave', 'pointercancel', 'blur'].forEach(ev => btn.addEventListener(ev, stopHold));
+      };
+      bind(disclaimerUp, -1);
+      bind(disclaimerDown, 1);
+      addEventListener('pointerup', stopHold);
+      addEventListener('blur', stopHold);
+
+      /* Confort clavier une fois la zone focalisee. */
+      disclaimerScroll.addEventListener('keydown', e => {
+        if (e.key === 'PageDown') { e.preventDefault(); page(1); }
+        else if (e.key === 'PageUp') { e.preventDefault(); page(-1); }
+        else if (e.key === 'End') { e.preventDefault(); disclaimerScroll.scrollTo({ top: disclaimerScroll.scrollHeight, behavior: reduce ? 'auto' : 'smooth' }); }
+        else if (e.key === 'Home') { e.preventDefault(); disclaimerScroll.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }); }
+      });
+    })();
 
     async function submitReservation() {
       const room = ROOMS[state.room];

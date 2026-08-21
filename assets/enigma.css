@@ -413,13 +413,34 @@
   .disclaimer-panel.show{display:block;}
   .disclaimer-panel h3{font-family:var(--font-label); font-weight:600; font-size:15px; color:var(--fog-bright); margin:0 0 6px;}
   .disclaimer-hint{font-size:12.5px; color:var(--fog-dim); margin:0 0 16px;}
-  .disclaimer-scroll{
-    position:relative; max-height:280px; overflow-y:auto; border:1px solid var(--line); background:var(--void-2);
-    padding:18px 20px; margin-bottom:6px;
+  .disclaimer-viewport{position:relative; margin-bottom:6px;}
+  .disclaimer-viewport::after{
+    content:""; position:absolute; left:1px; right:1px; bottom:1px; height:58px; pointer-events:none; z-index:1;
+    background:linear-gradient(to top, var(--void-2) 12%, rgba(9,12,17,0));
+    opacity:1; transition:opacity .35s var(--ease-out);
   }
+  .disclaimer-viewport.at-end::after{opacity:0;}
+  .disclaimer-scroll{
+    position:relative; max-height:280px; overflow-y:auto; overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch; scrollbar-width:thin; scrollbar-color:var(--steel-dim) transparent;
+    border:1px solid var(--line); background:var(--void-2);
+    padding:18px 64px 18px 20px;
+  }
+  .disclaimer-scroll:focus-visible{outline:1px solid var(--steel); outline-offset:-2px;}
   .disclaimer-scroll::-webkit-scrollbar{width:6px;}
   .disclaimer-scroll::-webkit-scrollbar-thumb{background:var(--steel-dim);}
   .disclaimer-scroll::-webkit-scrollbar-track{background:transparent;}
+  .disclaimer-nav{position:absolute; right:16px; bottom:16px; z-index:2; display:flex; flex-direction:column; gap:8px;}
+  .scroll-btn{
+    width:36px; height:36px; display:grid; place-items:center; padding:0; cursor:pointer;
+    border:1px solid var(--line-hot); background:rgba(5,7,10,.86); color:var(--fog);
+    -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
+    transition:color .3s var(--ease-out), border-color .3s var(--ease-out), background .3s var(--ease-out), transform .25s var(--ease-out), opacity .3s var(--ease-out);
+  }
+  .scroll-btn svg{width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round;}
+  .scroll-btn:hover:not(:disabled){color:var(--brass); border-color:var(--brass-dim); background:rgba(185,164,105,.12);}
+  .scroll-btn:active:not(:disabled){transform:scale(.92);}
+  .scroll-btn:disabled{opacity:.2; cursor:not-allowed;}
   .disclaimer-text{font-size:12.5px; line-height:1.75; color:var(--fog-dim);}
   .disclaimer-text p{margin:0 0 14px;}
   .disclaimer-text strong{color:var(--fog-bright); font-weight:600;}

@@ -114,9 +114,10 @@
             </form>
             <div class="disclaimer-panel" id="disclaimerPanel">
               <h3>Conditions générales de vente</h3>
-              <p class="disclaimer-hint">Merci de lire l'intégralité du texte ci-dessous. Le bouton de validation s'active une fois arrivé en bas.</p>
+              <p class="disclaimer-hint">Merci de lire l'intégralité du texte ci-dessous — molette, flèches du clavier ou boutons de défilement. Le bouton de validation s'active une fois arrivé en bas.</p>
               <div class="disclaimer-progress"><span id="disclaimerProgress"></span></div>
-              <div class="disclaimer-scroll" id="disclaimerScroll">
+              <div class="disclaimer-viewport" id="disclaimerViewport">
+                <div class="disclaimer-scroll" id="disclaimerScroll" data-lenis-prevent tabindex="0" role="region" aria-label="Conditions générales de vente">
                 <div class="disclaimer-text">
                   <p>Les présentes conditions générales de vente sont disponibles à tout moment et systématiquement portées à la connaissance de chaque client/utilisateur afin de lui permettre de passer commande. Ainsi, le fait de passer commande et d'accepter les conditions générales de vente lors du processus de réservation implique l'acceptation entière et sans réserve du client à ces conditions générales de vente.</p>
                   <p><strong>ARTICLE 1 — CONCEPT</strong><br>ENIGMA EG est un concept de jeu d'évasion grandeur nature appartenant à la société SARL ENIGMA EG. Les présentes conditions générales de vente sont applicables à tout contrat de mise à disposition d'une salle de jeu conclu entre (1) toute société du groupe SARL ENIGMA EG et (2) les utilisateurs de la salle, lesquels seront nommés « UTILISATEURS » ensuite ; qu'ils aient réservé personnellement ou qu'ils fassent partie de l'équipe de la personne ayant effectué la réservation, dénommée ci-après « L'ACHETEUR ». Ces conditions s'appliquent également quel que soit le moyen de réservation, que celle-ci soit effectuée via le site internet de ENIGMA EG, nommé ci-après « SITE INTERNET » ou auprès du personnel de ENIGMA EG SARL. L'espace de jeu mis à la disposition des joueurs est dénommé « SALLE » et le contrat de mise à disposition « CONTRAT ». La partie de jeu pour laquelle l'ACHETEUR réserve et paie sur le SITE INTERNET est appelée « SESSION DE JEU ».<br><br>ENIGMA EG SARL reconnaît le droit de modifier ou faire modifier tout ou partie des présentes conditions générales de vente ainsi que le contenu de son SITE INTERNET (https://www.enigma.ci), ceci à sa seule discrétion, à tout moment et sans préavis.<br><br>Les conditions générales de vente de ENIGMA EG SARL sont disponibles sur le SITE INTERNET et peuvent être consultées librement sur simple demande auprès du personnel d'accueil de ENIGMA EG SARL.</p>
@@ -129,6 +130,11 @@
                   <p><strong>ARTICLE 8 — PHOTOS ET CAMÉRAS</strong><br>Des photos de chaque équipe d'UTILISATEURS pourront être prises avant ou après la session de jeu. Ces photos pourront être utilisées par ENIGMA EG SARL afin d'alimenter son SITE INTERNET ou son écosystème digital (exemples sans restriction : Facebook, Twitter, Instagram, etc.). Ces mêmes photos seront disponibles aux UTILISATEURS sur le SITE INTERNET dans un délai raisonnable après la session de jeu. ENIGMA EG SARL ne pourra être tenu responsable de l'utilisation qui sera faite des photos par les UTILISATEURS et/ou l'ACHETEUR.<br><br>Chaque SALLE comporte un dispositif de vidéosurveillance et d'écoute permettant au personnel de ENIGMA EG SARL de suivre la session de jeu et d'aiguiller les UTILISATEURS si besoin.</p>
                   <p><strong>ARTICLE 9 — TRIBUNAUX COMPÉTENTS</strong><br>Les présentes conditions générales et tout contrat conclu incorporant ces termes et conditions sont régis par le droit ivoirien et tous les litiges sont soumis à la compétence exclusive des tribunaux de Côte d'Ivoire.</p>
                   <p class="disclaimer-end">Fin du document — Enigma Escape Game, Bietry, Abidjan. Contact : 07 88 02 00 00.</p>
+                  </div>
+                </div>
+                <div class="disclaimer-nav">
+                  <button type="button" class="scroll-btn" id="disclaimerUp" data-cursor="hover" aria-label="Remonter dans le texte" title="Remonter (maintenir pour défiler)" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 14.5 12 9.5l5 5"/></svg></button>
+                  <button type="button" class="scroll-btn" id="disclaimerDown" data-cursor="hover" aria-label="Descendre dans le texte" title="Descendre (maintenir pour défiler)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 9.5 12 14.5l5-5"/></svg></button>
                 </div>
               </div>
               <div class="disclaimer-actions">
