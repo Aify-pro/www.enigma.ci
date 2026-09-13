@@ -243,6 +243,7 @@ const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 const params = new URLSearchParams(location.search);
 const EVENT_ID = params.get('event');
 const ENIGMA_CODE_FROM_URL = params.get('enigma');
+const TEAM_CODE_FROM_URL = params.get('team');
 
 let session = null;       // { teamCode, teamName, teamNumber, eventName }
 let currentEnigma = null; // enigma actuellement affichée
@@ -278,6 +279,10 @@ async function init() {
     document.getElementById('tb-event-label').textContent = session.eventName || '';
     if (ENIGMA_CODE_FROM_URL) { await openEnigma(ENIGMA_CODE_FROM_URL); }
     else { showScreen('home'); loadHome(); }
+  } else if (TEAM_CODE_FROM_URL) {
+    showScreen('join');
+    document.getElementById('join-code').value = TEAM_CODE_FROM_URL;
+    await doJoin();
   } else {
     showScreen('join');
   }
