@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Événementiel — Team Building &amp; Chasses aux énigmes | ENIGMA Abidjan</title>
+<meta name="description" content="Enigma organise vos team buildings, anniversaires, sorties scolaires et entre amis à Abidjan : énigmes sur mesure, scan QR, classement en direct.">
+<meta name="theme-color" content="#05070a">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
+<link rel="apple-touch-icon" href="favicon-180.png">
+<meta property="og:title" content="Événementiel — ENIGMA Abidjan">
+<meta property="og:description" content="Team building, anniversaires, sorties scolaires et entre amis : Enigma imagine et anime vos chasses aux énigmes sur mesure à Abidjan.">
+<meta property="og:image" content="https://enigma.ci/enigma-logo.png">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Michroma&family=Oswald:wght@300;400;500;600&family=Familjen+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/enigma.css">
+
+<link rel="canonical" href="https://enigma.ci/evenementiel.html">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "@id": "https://enigma.ci/#business",
+  "name": "Enigma Escape Game",
+  "image": "https://enigma.ci/enigma-logo.png",
+  "url": "https://enigma.ci/",
+  "telephone": "+225 07 88 02 00 00",
+  "email": "contact@enigma.ci",
+  "priceRange": "$$",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Rue des Majorettes, face SMO",
+    "addressLocality": "Bietry, Abidjan",
+    "addressCountry": "CI"
+  }
+}
+</script>
+<style>
+  .offer-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:18px; margin-top:44px; }
+  .offer-card{
+    position:relative; background:var(--navy); border:1px solid var(--line); border-radius:2px;
+    padding:26px 22px; transition:border-color .3s ease, transform .3s ease;
+  }
+  .offer-card:hover{ border-color:var(--brass-dim); transform:translateY(-4px); }
+  .offer-card .ico{ font-size:26px; margin-bottom:14px; display:block; }
+  .offer-card h3{ font-family:var(--font-display); font-size:18px; font-weight:600; color:var(--fog-bright); margin:0 0 8px; }
+  .offer-card p{ font-size:13px; color:var(--steel); line-height:1.65; margin:0; }
+
+  .steps-row{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:40px; }
+  .step-box{ text-align:center; padding:20px 14px; }
+  .step-box .n{ font-family:var(--font-logo); font-size:13px; color:var(--brass); letter-spacing:.1em; margin-bottom:10px; }
+  .step-box h4{ font-family:var(--font-display); font-size:16px; font-weight:600; color:var(--fog-bright); margin:0 0 8px; }
+  .step-box p{ font-size:13px; color:var(--steel); line-height:1.6; margin:0; }
+  @media (max-width:760px){ .steps-row{ grid-template-columns:1fr; } }
+
+  .ev-list{ display:flex; flex-wrap:wrap; gap:10px; margin:34px 0 30px; }
+  .ev-chip{
+    background:var(--navy-2); border:1px solid var(--line); color:var(--fog); font-size:13px;
+    padding:10px 16px; border-radius:20px; cursor:pointer; font-family:var(--font-label);
+    transition:border-color .2s, color .2s;
+  }
+  .ev-chip:hover{ border-color:var(--brass-dim); color:var(--fog-bright); }
+  .ev-chip.active{ border-color:var(--brass); color:var(--fog-bright); background:rgba(185,164,105,.08); }
+  .ev-empty{ color:var(--fog-dim); font-size:13.5px; padding:20px 0; }
+</style>
+</head>
+<body>
+
+<canvas id="webgl"></canvas>
+<div id="fuse"></div>
+<div id="vignette"></div>
+<div id="grain"></div>
+<div id="cursor"><div class="ring"><span class="label">Entrer</span></div><div class="dot"></div></div>
+
+<header class="nav" id="siteNav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo" data-cursor="hover" aria-label="Enigma Escape Games"><img class="logo-img" src="enigma-logo.png" alt="Enigma Escape Games"></a>
+    <nav class="links" id="navLinks">
+      <a href="index.html" data-cursor="hover">Accueil</a>
+      <a href="salles.html" data-cursor="hover">Nos salles</a>
+      <a href="reservation.html" data-cursor="hover">Réservation</a>
+      <a href="classement.html" data-cursor="hover">Classement</a>
+      <a href="videos.html" data-cursor="hover">Vidéos</a>
+      <a href="evenementiel.html" data-cursor="hover">Événementiel</a>
+      <a href="apropos.html" data-cursor="hover">À propos</a>
+      <a href="contact.html" data-cursor="hover">Contact</a>
+      <a href="compte.html" data-cursor="hover">Mon compte</a>
+    </nav>
+    <div class="nav-right">
+      <div class="chrono" id="chrono" title="Durée d'une partie"><i></i><span id="chronoVal">60:00</span></div>
+      <a href="contact.html" class="btn btn-primary magnetic" data-cursor="hover"><span>Demander un devis</span></a>
+      <button class="burger" id="burger" aria-label="Ouvrir le menu" aria-expanded="false"><i></i><i></i></button>
+    </div>
+  </div>
+</header>
+
+<div id="mobileMenu">
+  <a href="index.html">Accueil</a>  <a href="salles.html">Nos salles</a>  <a href="reservation.html">Réservation</a>  <a href="classement.html">Classement</a>  <a href="videos.html">Vidéos</a>  <a href="evenementiel.html">Événementiel</a>  <a href="apropos.html">À propos</a>  <a href="contact.html">Contact</a><a href="compte.html">Mon compte</a>
+  <small data-site="phone">+225 07 88 02 00 00</small>
+</div>
+
+<section class="page-head">
+  <div class="wrap">
+    <p class="crumbs"><a href="index.html">Accueil</a> <span>/</span> <span>Événementiel</span></p>
+    <h1>Événementiel</h1>
+    <p>Enigma sort ses énigmes des salles : team building, anniversaires, sorties scolaires ou entre amis, nous concevons des chasses aux énigmes sur mesure, animées sur votre site avec scan QR et classement en direct.</p>
+  </div>
+</section>
+
+<main id="top">
+
+  <section id="offres" style="padding-top:70px;">
+    <div class="wrap">
+      <p class="eyebrow reveal">Pour qui ?</p>
+      <h2 class="section-title lines"><span class="ln"><span>Une expérience adaptée à chaque groupe.</span></span></h2>
+      <div class="offer-grid">
+        <div class="offer-card reveal"><span class="ico">🏢</span><h3>Entreprises</h3><p>Séminaires et team building : cohésion d'équipe autour d'énigmes conçues pour votre secteur, vos valeurs ou un événement précis.</p></div>
+        <div class="offer-card reveal"><span class="ico">🎓</span><h3>Écoles</h3><p>Sorties pédagogiques et animations de classe : des parcours ludiques adaptés à l'âge des élèves, en autonomie encadrée.</p></div>
+        <div class="offer-card reveal"><span class="ico">🎂</span><h3>Anniversaires</h3><p>Une chasse aux énigmes sur le thème de votre choix, pour marquer le coup entre amis ou en famille.</p></div>
+        <div class="offer-card reveal"><span class="ico">👥</span><h3>Entre amis</h3><p>Une sortie originale à organiser entre proches, sans salle à réserver — l'énigme se déplace où vous êtes.</p></div>
+        <div class="offer-card reveal"><span class="ico">✨</span><h3>Sur mesure</h3><p>Un autre projet en tête ? Parlons-en — nos scénarios s'adaptent au lieu, au format et au nombre de participants.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="crack"></div>
+
+  <section id="comment" style="padding-top:60px;">
+    <div class="wrap">
+      <p class="eyebrow reveal">Comment ça marche</p>
+      <h2 class="section-title lines"><span class="ln"><span>Trois étapes, aucune application à télécharger.</span></span></h2>
+      <div class="steps-row">
+        <div class="step-box reveal"><div class="n">01</div><h4>Un kit sur mesure</h4><p>Nous concevons vos énigmes et préparons le kit d'événement — équipes, codes d'accès, supports imprimés avec QR.</p></div>
+        <div class="step-box reveal"><div class="n">02</div><h4>Scan &amp; réponses</h4><p>Chaque équipe rejoint l'événement avec son code, scanne les énigmes trouvées sur place et envoie ses réponses depuis son téléphone.</p></div>
+        <div class="step-box reveal"><div class="n">03</div><h4>Classement en direct</h4><p>Les points s'affichent en temps réel pour les équipes — et restent consultables ici une fois l'événement terminé.</p></div>
+      </div>
+      <p style="margin-top:40px;"><a href="contact.html" class="btn btn-primary magnetic" data-cursor="hover"><span>Discuter de mon projet</span></a></p>
+    </div>
+  </section>
+
+  <div class="crack"></div>
+
+  <section id="resultats" style="padding-top:60px; padding-bottom:100px;">
+    <div class="wrap">
+      <p class="eyebrow reveal">Résultats</p>
+      <h2 class="section-title lines"><span class="ln"><span>Événements précédents.</span></span></h2>
+      <div class="ev-list reveal" id="evList"><span class="ev-empty">Chargement…</span></div>
+      <div style="overflow-x:auto;">
+        <table class="rank-table" id="evRankTable" style="display:none;"><thead><tr><th>#</th><th>Équipe</th><th style="text-align:right">Points</th></tr></thead><tbody></tbody></table>
+      </div>
+      <p class="ev-empty" id="evEmptyMsg" style="display:none;">Les classements de vos événements apparaîtront ici une fois ceux-ci terminés.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer id="contact-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div><a href="index.html" class="logo" style="margin-bottom:14px; display:inline-flex;"><img class="logo-img" src="enigma-logo.png" alt="Enigma Escape Games"></a><p>L'escape game grandeur nature de Bietry, Abidjan.</p></div>
+      <div><h5>Adresse</h5><p data-site="address">Bietry<br>Rue des Majorettes, face SMO<br>Abidjan — Côte d'Ivoire</p></div>
+      <div><h5>Contact</h5><p><a href="tel:+2250788020000" data-site="phone">+225 07 88 02 00 00</a><br><a href="mailto:contact@enigma.ci" data-site="email">contact@enigma.ci</a></p><p style="margin-top:10px;"><a href="https://instagram.com/enigma.ci" data-site="instagram" target="_blank" rel="noopener">Instagram</a> · <a href="https://www.facebook.com/enigmaescapegameci" data-site="facebook" target="_blank" rel="noopener">Facebook</a></p></div>
+      <div><h5>Horaires</h5><p data-site="hours">Mer – Ven : 12h – 00h<br>Sam : 12h – 02h<br>Dim : 14h – 22h<br>Lun – Mar : fermé</p></div>
+    </div>
+    <div class="footer-grid" style="grid-template-columns:repeat(4,1fr); margin-bottom:34px;">
+      <div><h5>Le site</h5><p><a href="salles.html">Nos salles</a><br><a href="reservation.html">Réservation</a><br><a href="classement.html">Classement</a></p></div>
+      <div><h5>Découvrir</h5><p><a href="videos.html">Vidéos</a><br><a href="evenementiel.html">Événementiel</a><br><a href="apropos.html">À propos</a><br><a href="apropos.html#faq">Questions fréquentes</a></p></div>
+      <div><h5>Joueurs</h5><p><a href="compte.html">Mon compte</a><br><a href="compte.html">Créer un compte</a></p></div>
+      <div><h5>Nous trouver</h5><p><a href="contact.html">Contact &amp; plan d'accès</a></p></div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Enigma Escape Game — Abidjan, Côte d'Ivoire.</span>
+      <span id="localClock">—</span>
+    </div>
+    <div class="footer-logo" id="footerBig" aria-hidden="true"><img src="enigma-logo.png" alt=""></div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+  window.ENIGMA_SITE = {
+    supabaseUrl:'https://lkklkceakfmufgtzzjwy.supabase.co',
+    supabaseAnonKey:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxra2xrY2Vha2ZtdWZndHp6and5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMjczMTYsImV4cCI6MjA5NjYwMzMxNn0.L-I5xh53vycuAFPr0QsOBAeiIEtG0D1rVIWSGjFvils'
+  };
+</script>
+<script src="assets/enigma.js"></script>
+
+<script>
+// ── Classements des événements Team Building (indépendant de enigma.js) ──
+(function () {
+  const CAT_LABELS = { ecole:'École', entreprise:'Entreprise', anniversaire:'Anniversaire', entre_amis:'Entre amis', autre:'Autre' };
+  let tbSb = null;
+  try { tbSb = supabase.createClient(window.ENIGMA_SITE.supabaseUrl, window.ENIGMA_SITE.supabaseAnonKey, { auth: { persistSession: false } }); }
+  catch (e) { return; }
+
+  function fmtDate(d) {
+    if (!d) return '';
+    const [y, m, day] = d.split('-');
+    return `${day}/${m}/${y}`;
+  }
+  function esc(s) { return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+  async function loadEvents() {
+    const listEl = document.getElementById('evList');
+    const { data, error } = await tbSb.rpc('tb_list_public_events');
+    if (error || !data || !data.length) {
+      listEl.innerHTML = '';
+      document.getElementById('evEmptyMsg').style.display = 'block';
+      return;
+    }
+    listEl.innerHTML = data.map((e, i) =>
+      `<button class="ev-chip${i === 0 ? ' active' : ''}" data-id="${e.event_id}">${esc(e.name)}${e.event_date ? ' — ' + fmtDate(e.event_date) : ''}</button>`
+    ).join('');
+    listEl.querySelectorAll('.ev-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        listEl.querySelectorAll('.ev-chip').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        loadRanking(btn.dataset.id);
+      });
+    });
+    loadRanking(data[0].event_id);
+  }
+
+  async function loadRanking(eventId) {
+    const table = document.getElementById('evRankTable');
+    const tbody = table.querySelector('tbody');
+    const { data, error } = await tbSb.rpc('tb_get_leaderboard', { p_event_id: eventId });
+    if (error || !data || !data.length) {
+      table.style.display = 'none';
+      document.getElementById('evEmptyMsg').textContent = 'Pas encore de score pour cet événement.';
+      document.getElementById('evEmptyMsg').style.display = 'block';
+      return;
+    }
+    document.getElementById('evEmptyMsg').style.display = 'none';
+    table.style.display = '';
+    const max = Math.max(...data.map(r => r.total_points), 1);
+    tbody.innerHTML = data.map((r, i) => `
+      <tr>
+        <td class="rk">${i + 1}</td>
+        <td class="nm">${esc(r.team_name)}${r.team_number ? ' · #' + r.team_number : ''}</td>
+        <td class="pt">${r.total_points}</td>
+      </tr>`).join('');
+  }
+
+  document.addEventListener('DOMContentLoaded', loadEvents);
+  if (document.readyState !== 'loading') loadEvents();
+})();
+</script>
+</body>
+</html>

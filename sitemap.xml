@@ -31,6 +31,12 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.enigma.ci/evenementiel.html</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://www.enigma.ci/apropos.html</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>weekly</changefreq>
