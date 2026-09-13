@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /teambuilding.html
 
 Sitemap: https://www.enigma.ci/sitemap.xml
