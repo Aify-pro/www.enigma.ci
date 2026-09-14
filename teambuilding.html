@@ -336,6 +336,23 @@ async function init() {
   if (saved) {
     session = JSON.parse(saved);
     document.getElementById('tb-event-label').textContent = session.eventName || '';
+    if (session.theme === undefined) {
+      // Session enregistrée avant l'ajout des thèmes/vidéo — on la complète en re-interrogeant le serveur.
+      try {
+        const { data } = await sb.rpc('tb_join_team', { p_event_id: EVENT_ID, p_code: session.teamCode });
+        if (data && data.length) {
+          const row = data[0];
+          session = {
+            ...session, eventName: row.event_name,
+            theme: row.event_theme || 'default', videoUrl: row.event_video_url || null, videoEnabled: !!row.event_video_enabled,
+          };
+          localStorage.setItem(sessionKey(), JSON.stringify(session));
+          document.getElementById('tb-event-label').textContent = session.eventName || '';
+        } else {
+          session.theme = 'default';
+        }
+      } catch (e) { session.theme = 'default'; }
+    }
     applyTheme(session.theme);
     if (ENIGMA_CODE_FROM_URL) { await openEnigma(ENIGMA_CODE_FROM_URL); }
     else { showScreen('home'); loadHome(); }
