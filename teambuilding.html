@@ -132,6 +132,11 @@
     opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; max-width:90vw; text-align:center;
   }
   #toast.show{ opacity:1; transform:translateX(-50%) translateY(-4px); }
+
+  .modal-overlay{ position:fixed; inset:0; background:rgba(2,4,8,.85); z-index:100; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .modal-overlay.hidden{ display:none; }
+  .modal-box{ background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px; width:100%; max-width:480px; }
+  .modal-box iframe{ width:100%; aspect-ratio:16/9; border:0; border-radius:8px; display:block; }
 </style>
 </head>
 <body>
@@ -183,6 +188,7 @@
       <button class="btn btn-primary" onclick="openScanner()">📷 Scanner une énigme</button>
     </div>
     <button class="btn btn-ghost" style="margin-bottom:18px;" onclick="showScreen('leaderboard')">🏆 Voir le classement</button>
+    <button class="btn btn-ghost" id="video-btn" style="display:none;margin-bottom:18px;" onclick="openVideoModal()">▶ Voir la vidéo de présentation</button>
 
     <div class="enigma-list" id="home-enigma-list"></div>
     <button class="link-btn" onclick="changeTeam()" style="margin-top:auto;">Changer d'équipe</button>
@@ -233,6 +239,13 @@
 
 <div id="toast"></div>
 
+<div class="modal-overlay hidden" id="video-modal">
+  <div class="modal-box">
+    <div id="video-frame-wrap"></div>
+    <button class="btn btn-ghost" style="margin-top:14px;" onclick="closeVideoModal()">Fermer</button>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="tb/jsQR.min.js"></script>
 <script>
@@ -252,6 +265,38 @@ let rankChannel = null, rankTimer = null;
 
 function sessionKey() { return 'tb_session_' + EVENT_ID; }
 function queueKey() { return 'tb_queue_' + EVENT_ID; }
+
+// ── Thèmes visuels par événement ──
+// Un thème ne modifie que les variables CSS ci-dessous (chaque valeur reprend --var du :root).
+// Pour ajouter un thème : lui donner un slug, l'ajouter ici avec ses couleurs, puis l'ajouter
+// à la liste TB_THEMES dans l'admin (evenements.html) pour qu'il soit sélectionnable.
+const THEMES = {
+  default: {}, // utilise les valeurs par défaut définies dans :root
+};
+function applyTheme(slug) {
+  const vars = THEMES[slug] || {};
+  Object.keys(vars).forEach(k => document.documentElement.style.setProperty(k, vars[k]));
+}
+
+// ── Vidéo de présentation (YouTube ou Google Drive) ──
+function toEmbedUrl(url) {
+  if (!url) return null;
+  let m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{6,})/);
+  if (m) return `https://www.youtube.com/embed/${m[1]}`;
+  m = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([a-zA-Z0-9_-]+)/);
+  if (m) return `https://drive.google.com/file/d/${m[1]}/preview`;
+  return url;
+}
+function openVideoModal() {
+  const embed = toEmbedUrl(session.videoUrl);
+  if (!embed) return;
+  document.getElementById('video-frame-wrap').innerHTML = `<iframe src="${embed}" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+  document.getElementById('video-modal').classList.remove('hidden');
+}
+function closeVideoModal() {
+  document.getElementById('video-modal').classList.add('hidden');
+  document.getElementById('video-frame-wrap').innerHTML = '';
+}
 
 function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -277,6 +322,7 @@ async function init() {
   if (saved) {
     session = JSON.parse(saved);
     document.getElementById('tb-event-label').textContent = session.eventName || '';
+    applyTheme(session.theme);
     if (ENIGMA_CODE_FROM_URL) { await openEnigma(ENIGMA_CODE_FROM_URL); }
     else { showScreen('home'); loadHome(); }
   } else if (TEAM_CODE_FROM_URL) {
@@ -305,9 +351,13 @@ async function doJoin() {
     return;
   }
   const row = data[0];
-  session = { teamCode: code.toUpperCase(), teamName: row.team_name, teamNumber: row.team_number, eventName: row.event_name };
+  session = {
+    teamCode: code.toUpperCase(), teamName: row.team_name, teamNumber: row.team_number, eventName: row.event_name,
+    theme: row.event_theme || 'default', videoUrl: row.event_video_url || null, videoEnabled: !!row.event_video_enabled,
+  };
   localStorage.setItem(sessionKey(), JSON.stringify(session));
   document.getElementById('tb-event-label').textContent = session.eventName;
+  applyTheme(session.theme);
   if (ENIGMA_CODE_FROM_URL) { await openEnigma(ENIGMA_CODE_FROM_URL); }
   else { showScreen('home'); loadHome(); }
 }
@@ -324,6 +374,7 @@ function changeTeam() {
 async function loadHome() {
   document.getElementById('home-team-name').textContent = session.teamName + (session.teamNumber ? ' · #' + session.teamNumber : '');
   document.getElementById('home-title').textContent = session.eventName;
+  document.getElementById('video-btn').style.display = (session.videoEnabled && session.videoUrl) ? '' : 'none';
   const { data, error } = await sb.rpc('tb_get_team_progress', { p_event_id: EVENT_ID, p_team_code: session.teamCode });
   if (error) { showToast('Erreur de chargement — réessayez'); return; }
   const list = data || [];

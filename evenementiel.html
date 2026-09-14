@@ -46,6 +46,7 @@
     padding:26px 22px; transition:border-color .3s ease, transform .3s ease;
   }
   .offer-card:hover{ border-color:var(--brass-dim); transform:translateY(-4px); }
+  .offer-card{ cursor:pointer; }
   .offer-card .ico{ font-size:26px; margin-bottom:14px; display:block; }
   .offer-card h3{ font-family:var(--font-display); font-size:18px; font-weight:600; color:var(--fog-bright); margin:0 0 8px; }
   .offer-card p{ font-size:13px; color:var(--steel); line-height:1.65; margin:0; }
@@ -66,6 +67,22 @@
   .ev-chip:hover{ border-color:var(--brass-dim); color:var(--fog-bright); }
   .ev-chip.active{ border-color:var(--brass); color:var(--fog-bright); background:rgba(185,164,105,.08); }
   .ev-empty{ color:var(--fog-dim); font-size:13.5px; padding:20px 0; }
+
+  .site-article{ padding:50px 0; border-top:1px solid var(--line); scroll-margin-top:110px; }
+  .site-article:first-child{ border-top:none; }
+  .article-inner{ display:grid; gap:34px; align-items:center; }
+  .article-inner.pos-left{ grid-template-columns:1fr 1.1fr; }
+  .article-inner.pos-right{ grid-template-columns:1.1fr 1fr; }
+  .article-inner.pos-right .article-media{ order:2; }
+  .article-inner.pos-top, .article-inner.pos-none{ grid-template-columns:1fr; }
+  .article-media img{ width:100%; border-radius:2px; display:block; }
+  .article-inner.pos-top .article-media img{ max-height:420px; object-fit:cover; margin-bottom:6px; }
+  .article-copy p{ color:var(--steel); font-size:14px; line-height:1.75; margin:0 0 14px; }
+  .article-copy p:last-child{ margin-bottom:0; }
+  @media (max-width:760px){
+    .article-inner.pos-left, .article-inner.pos-right{ grid-template-columns:1fr; }
+    .article-inner.pos-right .article-media{ order:0; }
+  }
 </style>
 </head>
 <body>
@@ -106,7 +123,7 @@
   <div class="wrap">
     <p class="crumbs"><a href="index.html">Accueil</a> <span>/</span> <span>Événementiel</span></p>
     <h1>Événementiel</h1>
-    <p>Enigma sort ses énigmes des salles : team building, anniversaires, sorties scolaires ou entre amis, nous concevons des chasses aux énigmes sur mesure, animées sur votre site avec scan QR et classement en direct.</p>
+    <p id="heroText">Enigma sort ses énigmes des salles : team building, anniversaires, sorties scolaires ou entre amis, nous concevons des chasses aux énigmes sur mesure, animées sur votre site avec scan QR et classement en direct.</p>
   </div>
 </section>
 
@@ -116,14 +133,16 @@
     <div class="wrap">
       <p class="eyebrow reveal">Pour qui ?</p>
       <h2 class="section-title lines"><span class="ln"><span>Une expérience adaptée à chaque groupe.</span></span></h2>
-      <div class="offer-grid">
-        <div class="offer-card reveal"><span class="ico">🏢</span><h3>Entreprises</h3><p>Séminaires et team building : cohésion d'équipe autour d'énigmes conçues pour votre secteur, vos valeurs ou un événement précis.</p></div>
-        <div class="offer-card reveal"><span class="ico">🎓</span><h3>Écoles</h3><p>Sorties pédagogiques et animations de classe : des parcours ludiques adaptés à l'âge des élèves, en autonomie encadrée.</p></div>
-        <div class="offer-card reveal"><span class="ico">🎂</span><h3>Anniversaires</h3><p>Une chasse aux énigmes sur le thème de votre choix, pour marquer le coup entre amis ou en famille.</p></div>
-        <div class="offer-card reveal"><span class="ico">👥</span><h3>Entre amis</h3><p>Une sortie originale à organiser entre proches, sans salle à réserver — l'énigme se déplace où vous êtes.</p></div>
-        <div class="offer-card reveal"><span class="ico">✨</span><h3>Sur mesure</h3><p>Un autre projet en tête ? Parlons-en — nos scénarios s'adaptent au lieu, au format et au nombre de participants.</p></div>
+      <div class="offer-grid" id="offerGrid">
+        <span class="ev-empty">Chargement…</span>
       </div>
     </div>
+  </section>
+
+  <div class="crack"></div>
+
+  <section id="articles">
+    <div class="wrap" id="articlesWrap"></div>
   </section>
 
   <div class="crack"></div>
@@ -249,8 +268,54 @@
       </tr>`).join('');
   }
 
-  document.addEventListener('DOMContentLoaded', loadEvents);
-  if (document.readyState !== 'loading') loadEvents();
+  function paragraphs(text) {
+    return (text || '').split(/\n\s*\n/).map(p => p.trim()).filter(Boolean).map(p => `<p>${esc(p)}</p>`).join('');
+  }
+
+  async function loadHeroText() {
+    const { data } = await tbSb.from('tb_site_content').select('hero_text').eq('key', 'evenementiel').maybeSingle();
+    if (data && data.hero_text) document.getElementById('heroText').textContent = data.hero_text;
+  }
+
+  async function loadCategoriesAndArticles() {
+    const { data, error } = await tbSb.from('tb_site_categories').select('*').eq('active', true).order('order_index');
+    const grid = document.getElementById('offerGrid');
+    const wrap = document.getElementById('articlesWrap');
+    if (error || !data || !data.length) {
+      grid.innerHTML = '';
+      return;
+    }
+    grid.innerHTML = data.map(c => `
+      <div class="offer-card reveal" data-target="article-${c.id}">
+        <span class="ico">${esc(c.icon || '✨')}</span><h3>${esc(c.title)}</h3><p>${esc(c.card_text || '')}</p>
+      </div>`).join('');
+    grid.querySelectorAll('.offer-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const target = document.getElementById(card.dataset.target);
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+
+    wrap.innerHTML = data.map(c => {
+      const pos = c.image_position || 'top';
+      const hasImage = pos !== 'none' && c.image_url;
+      const media = hasImage ? `<div class="article-media"><img src="${esc(c.image_url)}" alt="${esc(c.title)}" loading="lazy"></div>` : '';
+      return `
+      <article class="site-article" id="article-${c.id}">
+        <div class="article-inner pos-${hasImage ? pos : 'none'}">
+          ${media}
+          <div class="article-copy">
+            <p class="eyebrow reveal">${esc(c.icon || '')} ${esc(c.title)}</p>
+            <h2 class="section-title lines"><span class="ln"><span>${esc(c.article_title || c.title)}</span></span></h2>
+            ${paragraphs(c.article_body)}
+          </div>
+        </div>
+      </article>`;
+    }).join('');
+  }
+
+  document.addEventListener('DOMContentLoaded', () => { loadHeroText(); loadCategoriesAndArticles(); loadEvents(); });
+  if (document.readyState !== 'loading') { loadHeroText(); loadCategoriesAndArticles(); loadEvents(); }
 })();
 </script>
 </body>
