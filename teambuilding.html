@@ -8,13 +8,16 @@
 <meta name="theme-color" content="#060a12">
 <link rel="icon" href="favicon.ico" sizes="any">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&family=Cormorant+Garamond:wght@600;700&family=EB+Garamond:wght@400;500;600&display=swap');
   :root{
     --bg:#060a12; --panel:#0d1420; --panel2:#111a29; --line:#1c2636;
     --text:#e6ebf5; --text2:#8d99ad; --text3:#5a6579;
     --cyan:#38e0ff; --green:#4ade80; --amber:#f5c344; --red:#f36f6f;
     --font-label:'Familjen Grotesk',sans-serif; --font-body:'Inter',sans-serif; --mono:'JetBrains Mono',monospace;
-    --radius:14px;
+    --radius:14px; --radius-ui:12px;
+    --glow1:rgba(56,224,255,.08); --glow2:rgba(74,222,128,.05);
+    --btn-primary-a:#4de8ff; --btn-primary-b:var(--cyan); --btn-primary-text:#02141a;
+    --btn-success-text:#052b12;
   }
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
   html,body{height:100%;}
@@ -26,8 +29,8 @@
   body::before{
     content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
     background:
-      radial-gradient(700px 400px at 15% -10%, rgba(56,224,255,.08), transparent 60%),
-      radial-gradient(600px 350px at 100% 0%, rgba(74,222,128,.05), transparent 60%);
+      radial-gradient(700px 400px at 15% -10%, var(--glow1), transparent 60%),
+      radial-gradient(600px 350px at 100% 0%, var(--glow2), transparent 60%);
   }
   .topbar{
     display:flex; align-items:center; justify-content:space-between; gap:10px;
@@ -58,15 +61,15 @@
 
   .btn{
     display:flex; align-items:center; justify-content:center; gap:8px;
-    width:100%; padding:15px 20px; border-radius:12px; border:none;
+    width:100%; padding:15px 20px; border-radius:var(--radius-ui); border:none;
     font-size:15px; font-weight:700; font-family:inherit; cursor:pointer;
     transition:transform .12s, opacity .15s;
   }
   .btn:active{ transform:scale(.98); }
   .btn:disabled{ opacity:.45; }
-  .btn-primary{ background:linear-gradient(180deg,#4de8ff,var(--cyan)); color:#02141a; }
+  .btn-primary{ background:linear-gradient(180deg,var(--btn-primary-a),var(--btn-primary-b)); color:var(--btn-primary-text); }
   .btn-ghost{ background:var(--panel2); border:1px solid var(--line); color:var(--text); }
-  .btn-success{ background:var(--green); color:#052b12; }
+  .btn-success{ background:var(--green); color:var(--btn-success-text); }
   .btn-sm{ padding:10px 14px; font-size:13px; width:auto; }
   .btn-row{ display:flex; gap:10px; margin-top:auto; padding-top:16px; }
   .btn-row .btn{ flex:1; }
@@ -80,7 +83,7 @@
   @keyframes pulse-dot{ 70%{box-shadow:0 0 0 6px rgba(74,222,128,0);} 100%{box-shadow:0 0 0 0 rgba(74,222,128,0);} }
 
   .stat-row{ display:flex; gap:10px; margin-bottom:18px; }
-  .stat-box{ flex:1; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px; text-align:center; }
+  .stat-box{ flex:1; background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-ui); padding:14px; text-align:center; }
   .stat-box .num{ font-family:var(--mono); font-size:24px; font-weight:700; color:var(--cyan); }
   .stat-box .lbl{ font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:var(--text3); margin-top:2px; }
 
@@ -109,7 +112,7 @@
   .divider{ display:flex; align-items:center; gap:10px; color:var(--text3); font-size:11px; text-transform:uppercase; letter-spacing:.08em; margin:16px 0; }
   .divider::before, .divider::after{ content:""; flex:1; height:1px; background:var(--line); }
 
-  .feedback{ border-radius:12px; padding:16px; margin-bottom:16px; font-size:14px; font-weight:600; display:flex; align-items:center; gap:10px; }
+  .feedback{ border-radius:var(--radius-ui); padding:16px; margin-bottom:16px; font-size:14px; font-weight:600; display:flex; align-items:center; gap:10px; }
   .feedback-ok{ background:rgba(74,222,128,.12); border:1px solid rgba(74,222,128,.35); color:var(--green); }
   .feedback-err{ background:rgba(243,111,111,.12); border:1px solid rgba(243,111,111,.35); color:var(--red); }
   .feedback-pending{ background:rgba(245,195,68,.12); border:1px solid rgba(245,195,68,.35); color:var(--amber); }
@@ -272,6 +275,16 @@ function queueKey() { return 'tb_queue_' + EVENT_ID; }
 // à la liste TB_THEMES dans l'admin (evenements.html) pour qu'il soit sélectionnable.
 const THEMES = {
   default: {}, // utilise les valeurs par défaut définies dans :root
+  harmonia: {
+    '--bg': '#e4d8b8', '--panel': 'rgba(255,255,255,.35)', '--panel2': 'rgba(255,255,255,.55)', '--line': 'rgba(28,46,68,.25)',
+    '--text': '#241d12', '--text2': '#5b4d2e', '--text3': '#6b5a34',
+    '--cyan': '#1c2e44', '--green': '#3f5c3f', '--amber': '#a6813c', '--red': '#8a3a2c',
+    '--font-label': "'Cormorant Garamond',serif", '--font-body': "'EB Garamond',serif", '--mono': "'JetBrains Mono',monospace",
+    '--radius': '3px', '--radius-ui': '3px',
+    '--glow1': 'rgba(120,95,50,.18)', '--glow2': 'rgba(28,46,68,.06)',
+    '--btn-primary-a': '#1c2e44', '--btn-primary-b': '#1c2e44', '--btn-primary-text': '#ecdfc0',
+    '--btn-success-text': '#f4ecd8',
+  },
 };
 function applyTheme(slug) {
   const vars = THEMES[slug] || {};
