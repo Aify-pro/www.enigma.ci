@@ -96,6 +96,7 @@
   .enigma-item .ico{ font-size:16px; flex-shrink:0; width:20px; text-align:center; }
   .enigma-item .title{ flex:1; }
   .enigma-item .pts{ font-family:var(--mono); font-size:12px; color:var(--text3); }
+  .attempts-badge{ font-family:var(--mono); font-size:11px; color:var(--text3); white-space:nowrap; }
 
   .scan-wrap{ position:relative; flex:1; display:flex; flex-direction:column; }
   #video{ width:100%; border-radius:var(--radius); background:#000; aspect-ratio:1/1; object-fit:cover; }
@@ -220,6 +221,7 @@
     <div id="enigma-feedback"></div>
     <h1 id="enigma-title"></h1>
     <p class="sub" id="enigma-question"></p>
+    <div id="enigma-attempts"></div>
     <img id="enigma-image" style="display:none;width:100%;border-radius:12px;margin-bottom:16px;" alt="">
     <div class="field" id="enigma-answer-field">
       <label>Votre réponse</label>
@@ -264,6 +266,7 @@ const TEAM_CODE_FROM_URL = params.get('team');
 
 let session = null;       // { teamCode, teamName, teamNumber, eventName }
 let currentEnigma = null; // enigma actuellement affichée
+let progressData = [];    // cache du dernier tb_get_team_progress
 let qrStream = null, qrRAF = null;
 let rankChannel = null, rankTimer = null;
 
@@ -409,19 +412,27 @@ async function loadHome() {
   const { data, error } = await sb.rpc('tb_get_team_progress', { p_event_id: EVENT_ID, p_team_code: session.teamCode });
   if (error) { showToast('Erreur de chargement — réessayez'); return; }
   const list = data || [];
+  progressData = list;
   const solved = list.filter(e => e.status === 'validee').length;
   const points = list.reduce((s, e) => s + (e.status === 'validee' ? e.points_awarded : 0), 0);
   document.getElementById('home-solved').textContent = solved + '/' + list.length;
   document.getElementById('home-points').textContent = points;
   document.getElementById('home-status-text').textContent =
     list.length ? 'Scannez les énigmes trouvées sur le terrain pour marquer des points.' : 'Aucune énigme disponible pour le moment.';
-  const icons = { validee:'✅', refusee:'❌', en_attente:'⏳', non_tentee:'⬜' };
-  document.getElementById('home-enigma-list').innerHTML = list.map(e => `
-    <div class="enigma-item">
-      <span class="ico">${icons[e.status] || '⬜'}</span>
+  const icons = { validee:'✅', refusee:'❌', en_attente:'⏳', non_tentee:'⬜', bloquee:'🚫' };
+  document.getElementById('home-enigma-list').innerHTML = list.map(e => {
+    const isBlocked = e.max_attempts != null && e.attempts_used >= e.max_attempts && e.status !== 'validee';
+    const icon = isBlocked ? '🚫' : (icons[e.status] || '⬜');
+    const attemptsHtml = e.max_attempts != null
+      ? `<span class="attempts-badge">${e.attempts_used}/${e.max_attempts}</span>`
+      : '';
+    return `<div class="enigma-item">
+      <span class="ico">${icon}</span>
       <span class="title">${escHtml(e.title)}</span>
+      ${attemptsHtml}
       <span class="pts">${e.points} pts</span>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 // ══════════════ Scanner QR ══════════════
@@ -512,16 +523,25 @@ async function openEnigma(code) {
     document.getElementById('enigma-submit-btn').style.display = 'none';
     return;
   }
-  currentEnigma = { code, points: en.points };
+  const prog = progressData.find(p => p.enigma_code && p.enigma_code.toUpperCase() === code.toUpperCase());
+  currentEnigma = {
+    code, points: en.points,
+    attempts_used: prog ? (prog.attempts_used || 0) : 0,
+    max_attempts: prog ? prog.max_attempts : null,
+  };
   document.getElementById('enigma-title').textContent = en.title;
   document.getElementById('enigma-question').textContent = en.question_text;
   if (en.question_image_url) {
     document.getElementById('enigma-image').src = en.question_image_url;
     document.getElementById('enigma-image').style.display = 'block';
   }
+  renderAttemptsDisplay();
   if (en.event_status !== 'en_cours') {
     document.getElementById('enigma-feedback').innerHTML = `<div class="feedback feedback-pending">⏳ L'événement n'est pas en cours pour le moment.</div>`;
     document.getElementById('enigma-submit-btn').disabled = true;
+  } else if (currentEnigma.max_attempts != null && currentEnigma.attempts_used >= currentEnigma.max_attempts) {
+    document.getElementById('enigma-submit-btn').disabled = true;
+    document.getElementById('enigma-answer-field').style.display = 'none';
   } else {
     document.getElementById('enigma-submit-btn').disabled = false;
   }
@@ -539,8 +559,8 @@ async function submitEnigmaAnswer() {
     btn.disabled = false; btn.textContent = 'Envoyer';
     if (error) {
       if (error.message && error.message.includes('MAX_ATTEMPTS_REACHED')) {
-        document.getElementById('enigma-feedback').innerHTML =
-          `<div class="feedback feedback-err">🚫 Nombre maximum de tentatives atteint pour cette énigme.</div>`;
+        currentEnigma.attempts_used = currentEnigma.max_attempts;
+        renderAttemptsDisplay();
         btn.disabled = true;
         document.getElementById('enigma-answer-field').style.display = 'none';
         return;
@@ -548,10 +568,29 @@ async function submitEnigmaAnswer() {
       queueOffline(currentEnigma.code, answer);
       return;
     }
+    currentEnigma.attempts_used = (currentEnigma.attempts_used || 0) + 1;
+    const prog = progressData.find(p => p.enigma_code && p.enigma_code.toUpperCase() === currentEnigma.code.toUpperCase());
+    if (prog) prog.attempts_used = currentEnigma.attempts_used;
+    renderAttemptsDisplay();
     renderAnswerFeedback(data[0]);
+    if (currentEnigma.max_attempts != null && currentEnigma.attempts_used >= currentEnigma.max_attempts) {
+      btn.disabled = true;
+      document.getElementById('enigma-answer-field').style.display = 'none';
+    }
   } catch (e) {
     btn.disabled = false; btn.textContent = 'Envoyer';
     queueOffline(currentEnigma.code, answer);
+  }
+}
+function renderAttemptsDisplay() {
+  const el = document.getElementById('enigma-attempts');
+  if (!el || currentEnigma.max_attempts == null) { if (el) el.innerHTML = ''; return; }
+  const remaining = currentEnigma.max_attempts - currentEnigma.attempts_used;
+  if (remaining <= 0) {
+    el.innerHTML = `<div class="feedback feedback-err" style="margin-bottom:12px;">🚫 Nombre maximum de tentatives atteint pour cette énigme.</div>`;
+  } else {
+    const cls = remaining === 1 ? 'feedback-err' : (remaining <= 2 ? 'feedback-pending' : 'feedback-pending');
+    el.innerHTML = `<div class="feedback ${cls}" style="margin-bottom:12px;">🎯 ${remaining} tentative${remaining > 1 ? 's' : ''} restante${remaining > 1 ? 's' : ''}</div>`;
   }
 }
 function renderAnswerFeedback(result) {
