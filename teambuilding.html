@@ -528,6 +528,7 @@ async function openEnigma(code) {
     code, points: en.points,
     attempts_used: prog ? (prog.attempts_used || 0) : 0,
     max_attempts: prog ? prog.max_attempts : null,
+    already_validated: prog ? prog.status === 'validee' : false,
   };
   document.getElementById('enigma-title').textContent = en.title;
   document.getElementById('enigma-question').textContent = en.question_text;
@@ -539,6 +540,10 @@ async function openEnigma(code) {
   if (en.event_status !== 'en_cours') {
     document.getElementById('enigma-feedback').innerHTML = `<div class="feedback feedback-pending">⏳ L'événement n'est pas en cours pour le moment.</div>`;
     document.getElementById('enigma-submit-btn').disabled = true;
+  } else if (currentEnigma.already_validated) {
+    document.getElementById('enigma-feedback').innerHTML = `<div class="feedback feedback-ok">✅ Votre équipe a déjà résolu cette énigme.</div>`;
+    document.getElementById('enigma-submit-btn').style.display = 'none';
+    document.getElementById('enigma-answer-field').style.display = 'none';
   } else if (currentEnigma.max_attempts != null && currentEnigma.attempts_used >= currentEnigma.max_attempts) {
     document.getElementById('enigma-submit-btn').disabled = true;
     document.getElementById('enigma-answer-field').style.display = 'none';
@@ -558,6 +563,14 @@ async function submitEnigmaAnswer() {
     });
     btn.disabled = false; btn.textContent = 'Envoyer';
     if (error) {
+      if (error.message && error.message.includes('ALREADY_VALIDATED')) {
+        currentEnigma.already_validated = true;
+        document.getElementById('enigma-feedback').innerHTML =
+          `<div class="feedback feedback-ok">✅ Votre équipe a déjà résolu cette énigme.</div>`;
+        btn.disabled = true;
+        document.getElementById('enigma-answer-field').style.display = 'none';
+        return;
+      }
       if (error.message && error.message.includes('MAX_ATTEMPTS_REACHED')) {
         currentEnigma.attempts_used = currentEnigma.max_attempts;
         renderAttemptsDisplay();
