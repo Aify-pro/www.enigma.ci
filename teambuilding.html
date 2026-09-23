@@ -537,7 +537,17 @@ async function submitEnigmaAnswer() {
       p_event_id: EVENT_ID, p_team_code: session.teamCode, p_enigma_code: currentEnigma.code, p_answer: answer,
     });
     btn.disabled = false; btn.textContent = 'Envoyer';
-    if (error) { queueOffline(currentEnigma.code, answer); return; }
+    if (error) {
+      if (error.message && error.message.includes('MAX_ATTEMPTS_REACHED')) {
+        document.getElementById('enigma-feedback').innerHTML =
+          `<div class="feedback feedback-err">🚫 Nombre maximum de tentatives atteint pour cette énigme.</div>`;
+        btn.disabled = true;
+        document.getElementById('enigma-answer-field').style.display = 'none';
+        return;
+      }
+      queueOffline(currentEnigma.code, answer);
+      return;
+    }
     renderAnswerFeedback(data[0]);
   } catch (e) {
     btn.disabled = false; btn.textContent = 'Envoyer';
@@ -573,7 +583,9 @@ async function flushQueue() {
       const { error } = await sb.rpc('tb_submit_answer', {
         p_event_id: EVENT_ID, p_team_code: session.teamCode, p_enigma_code: item.code, p_answer: item.answer,
       });
-      if (error) remaining.push(item);
+      if (error) {
+        if (!(error.message && error.message.includes('MAX_ATTEMPTS_REACHED'))) remaining.push(item);
+      }
     } catch (e) { remaining.push(item); }
   }
   localStorage.setItem(queueKey(), JSON.stringify(remaining));
@@ -614,3 +626,4 @@ showScreen = function(name) { _origShowScreen(name); if (name === 'leaderboard')
 </script>
 </body>
 </html>
+
