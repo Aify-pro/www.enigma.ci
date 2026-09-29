@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#060a12">
 <link rel="icon" href="favicon.ico" sizes="any">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&family=Cormorant+Garamond:wght@600;700&family=EB+Garamond:wght@400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&family=Cormorant+Garamond:wght@600;700&family=EB+Garamond:wght@400;500;600&family=Fondamento&display=swap');
   :root{
     --bg:#060a12; --panel:#0d1420; --panel2:#111a29; --line:#1c2636;
     --text:#e6ebf5; --text2:#8d99ad; --text3:#5a6579;
@@ -19,11 +19,14 @@
     --glow1:rgba(56,224,255,.08); --glow2:rgba(74,222,128,.05);
     --btn-primary-a:#4de8ff; --btn-primary-b:var(--cyan); --btn-primary-text:#02141a;
     --btn-success-text:#052b12;
+    --bg-image:none; --panel-blur:0px;
   }
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
   html,body{height:100%;}
   body{
-    background:var(--bg); color:var(--text); font-family:var(--font-body);
+    background-color:var(--bg); color:var(--text); font-family:var(--font-body);
+    background-image:var(--bg-image); background-size:cover; background-position:center top;
+    background-repeat:no-repeat; background-attachment:fixed;
     min-height:100dvh; display:flex; flex-direction:column;
     -webkit-font-smoothing:antialiased;
   }
@@ -75,7 +78,7 @@
   .btn-row{ display:flex; gap:10px; margin-top:auto; padding-top:16px; }
   .btn-row .btn{ flex:1; }
 
-  .card{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:18px; margin-bottom:14px; }
+  .card{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:18px; margin-bottom:14px; backdrop-filter:blur(var(--panel-blur)); }
   .team-pill{
     display:inline-flex; align-items:center; gap:8px; background:var(--panel2); border:1px solid var(--line);
     border-radius:20px; padding:6px 14px; font-size:12.5px; font-weight:600; margin-bottom:18px;
@@ -84,14 +87,14 @@
   @keyframes pulse-dot{ 70%{box-shadow:0 0 0 6px rgba(74,222,128,0);} 100%{box-shadow:0 0 0 0 rgba(74,222,128,0);} }
 
   .stat-row{ display:flex; gap:10px; margin-bottom:18px; }
-  .stat-box{ flex:1; background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-ui); padding:14px; text-align:center; }
+  .stat-box{ flex:1; background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-ui); padding:14px; text-align:center; backdrop-filter:blur(var(--panel-blur)); }
   .stat-box .num{ font-family:var(--mono); font-size:24px; font-weight:700; color:var(--cyan); }
   .stat-box .lbl{ font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:var(--text3); margin-top:2px; }
 
   .enigma-list{ display:flex; flex-direction:column; gap:8px; margin-bottom:20px; }
   .enigma-item{
     display:flex; align-items:center; gap:12px; background:var(--panel); border:1px solid var(--line);
-    border-radius:10px; padding:12px 14px; font-size:13.5px;
+    border-radius:10px; padding:12px 14px; font-size:13.5px; backdrop-filter:blur(var(--panel-blur));
   }
   .enigma-item .ico{ font-size:16px; flex-shrink:0; width:20px; text-align:center; }
   .enigma-item .title{ flex:1; }
@@ -119,7 +122,7 @@
   .feedback-err{ background:rgba(243,111,111,.12); border:1px solid rgba(243,111,111,.35); color:var(--red); }
   .feedback-pending{ background:rgba(245,195,68,.12); border:1px solid rgba(245,195,68,.35); color:var(--amber); }
 
-  .rank-row{ display:flex; align-items:center; gap:12px; padding:12px 14px; background:var(--panel); border:1px solid var(--line); border-radius:10px; margin-bottom:8px; }
+  .rank-row{ display:flex; align-items:center; gap:12px; padding:12px 14px; background:var(--panel); border:1px solid var(--line); border-radius:10px; margin-bottom:8px; backdrop-filter:blur(var(--panel-blur)); }
   .rank-row .pos{ font-family:var(--mono); font-weight:700; width:26px; color:var(--text3); }
   .rank-row.me{ border-color:var(--cyan); box-shadow:0 0 0 1px rgba(56,224,255,.25); }
   .rank-row .name{ flex:1; font-weight:600; font-size:13.5px; }
@@ -142,11 +145,37 @@
   .modal-overlay.hidden{ display:none; }
   .modal-box{ background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px; width:100%; max-width:480px; }
   .modal-box iframe{ width:100%; aspect-ratio:16/9; border:0; border-radius:8px; display:block; }
+
+  .screen{ position:relative; }
+  .theme-motif{ display:none; position:absolute; top:12px; right:0; width:32px; height:32px; opacity:.55; pointer-events:none; color:var(--cyan); }
+  .theme-tagline{ display:none; font-style:italic; font-size:12.5px; color:var(--text2); margin:-10px 0 18px; padding-bottom:16px; border-bottom:1px solid var(--line); }
+  .theme-stamp{
+    display:none; position:absolute; bottom:70px; right:18px; width:58px; height:58px; border-radius:50%;
+    border:1.5px solid var(--red); opacity:.55; transform:rotate(-8deg); align-items:center; justify-content:center;
+    text-align:center; font-family:var(--mono); font-size:6.5px; letter-spacing:.05em; color:var(--red); line-height:1.3;
+  }
+  body[data-theme="harmonia"] .theme-motif.motif-harmonia,
+  body[data-theme="harmonia"] .theme-tagline.tagline-harmonia,
+  body[data-theme="harmonia"] .theme-stamp.stamp-harmonia{ display:block; }
+  body[data-theme="harmonia"] .theme-stamp.stamp-harmonia{ display:flex; }
+  body[data-theme="alice"] .theme-motif.motif-alice,
+  body[data-theme="alice"] .theme-tagline.tagline-alice,
+  body[data-theme="alice"] .theme-stamp.stamp-alice{ display:block; }
+  body[data-theme="alice"] .theme-stamp.stamp-alice{ display:flex; }
 </style>
 </head>
 <body>
 
 <div class="topbar">
+  <svg class="theme-motif motif-harmonia" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" stroke-width="1.2"/>
+    <path d="M50 8 L58 50 L50 92 L42 50 Z" fill="currentColor"/>
+    <path d="M8 50 L50 42 L92 50 L50 58 Z" fill="currentColor" opacity=".55"/>
+    <circle cx="50" cy="50" r="4" fill="currentColor"/>
+  </svg>
+  <svg class="theme-motif motif-alice" viewBox="0 0 32 29">
+    <path fill="currentColor" d="M16 29C4 20 0 14 0 8.5 0 3.8 3.8 0 8.5 0c2.9 0 5.6 1.4 7.5 3.9C17.9 1.4 20.6 0 23.5 0 28.2 0 32 3.8 32 8.5 32 14 28 20 16 29z"/>
+  </svg>
   <div class="brand"><img src="enigma-logo.png" alt="Enigma"><span>Team Building</span></div>
   <div class="event-name" id="tb-event-label">—</div>
 </div>
@@ -170,6 +199,8 @@
   <div class="screen" id="screen-join">
     <h1>Bienvenue 👋</h1>
     <p class="sub">Entrez le code remis à votre équipe pour rejoindre le team building.</p>
+    <p class="theme-tagline tagline-harmonia">« Observer autrement pour voir plus loin. »</p>
+    <p class="theme-tagline tagline-alice">« Nous sommes tous fous ici. »</p>
     <div class="field">
       <label>Code équipe</label>
       <input type="text" id="join-code" class="code-input" maxlength="8" placeholder="••••••" autocomplete="off" autocapitalize="characters">
@@ -196,6 +227,8 @@
     <button class="btn btn-ghost" id="video-btn" style="display:none;margin-bottom:18px;" onclick="openVideoModal()">▶ Voir la vidéo de présentation</button>
 
     <div class="enigma-list" id="home-enigma-list"></div>
+    <div class="theme-stamp stamp-harmonia">HARMONIA<br>EXPLORER</div>
+    <div class="theme-stamp stamp-alice">♥<br>WONDERLAND</div>
     <button class="link-btn" onclick="changeTeam()" style="margin-top:auto;">Changer d'équipe</button>
   </div>
 
@@ -289,9 +322,24 @@ const THEMES = {
     '--btn-primary-a': '#1c2e44', '--btn-primary-b': '#1c2e44', '--btn-primary-text': '#ecdfc0',
     '--btn-success-text': '#f4ecd8',
   },
+  alice: {
+    '--bg': '#f1e2c9', '--panel': 'rgba(241,228,201,.82)', '--panel2': 'rgba(255,255,255,.55)', '--line': 'rgba(161,29,44,.3)',
+    '--text': '#2b1810', '--text2': '#6b4a2e', '--text3': '#8a5a1f',
+    '--cyan': '#a11d2c', '--green': '#3a5c3a', '--amber': '#a6813c', '--red': '#7a1620',
+    '--font-label': "'Fondamento',cursive", '--font-body': "'EB Garamond',serif", '--mono': "'JetBrains Mono',monospace",
+    '--radius': '8px', '--radius-ui': '8px',
+    '--glow1': 'rgba(161,29,44,.08)', '--glow2': 'rgba(58,92,58,.05)',
+    '--btn-primary-a': '#a11d2c', '--btn-primary-b': '#7a1620', '--btn-primary-text': '#f7ecd8',
+    '--btn-success-text': '#f4ecd8',
+    '--bg-image': "url('tb/theme-alice-bg.jpg')", '--panel-blur': '3px',
+  },
 };
 function applyTheme(slug) {
   const vars = THEMES[slug] || {};
+  // Réinitialise les variables spécifiques à un fond d'image avant d'appliquer le nouveau thème
+  // (sinon un thème sans image hériterait du fond du thème précédemment affiché sur cet appareil).
+  document.documentElement.style.setProperty('--bg-image', 'none');
+  document.documentElement.style.setProperty('--panel-blur', '0px');
   Object.keys(vars).forEach(k => document.documentElement.style.setProperty(k, vars[k]));
 }
 
