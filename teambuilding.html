@@ -383,7 +383,17 @@ window.addEventListener('load', init);
 async function init() {
   if (!EVENT_ID) { showScreen('invalid'); return; }
   flushQueue(); // tente d'envoyer d'éventuelles réponses en attente d'une session précédente
-  const saved = localStorage.getItem(sessionKey());
+  let saved = localStorage.getItem(sessionKey());
+  // Un QR d'équipe (?team=…) scanné depuis un appareil déjà rattaché à une autre équipe
+  // doit changer d'équipe, pas reprendre silencieusement l'ancienne session.
+  if (saved && TEAM_CODE_FROM_URL) {
+    let prev = null;
+    try { prev = JSON.parse(saved); } catch (e) {}
+    if (!prev || String(prev.teamCode || '').toUpperCase() !== TEAM_CODE_FROM_URL.trim().toUpperCase()) {
+      localStorage.removeItem(sessionKey());
+      saved = null;
+    }
+  }
   if (saved) {
     session = JSON.parse(saved);
     document.getElementById('tb-event-label').textContent = session.eventName || '';
