@@ -176,7 +176,7 @@
   <svg class="theme-motif motif-alice" viewBox="0 0 32 29">
     <path fill="currentColor" d="M16 29C4 20 0 14 0 8.5 0 3.8 3.8 0 8.5 0c2.9 0 5.6 1.4 7.5 3.9C17.9 1.4 20.6 0 23.5 0 28.2 0 32 3.8 32 8.5 32 14 28 20 16 29z"/>
   </svg>
-  <div class="brand"><img src="enigma-logo.png" alt="Enigma"><span>Team Building</span></div>
+  <div class="brand"><img src="enigma-logo.png" alt="Enigma"><span id="tb-brand-label">Team Building</span></div>
   <div class="event-name" id="tb-event-label">—</div>
 </div>
 
@@ -303,6 +303,13 @@ let progressData = [];    // cache du dernier tb_get_team_progress
 let qrStream = null, qrRAF = null;
 let rankChannel = null, rankTimer = null;
 
+// Libellé affiché dans l'en-tête à la place de « Team Building » selon le type d'événement
+const CATEGORY_LABELS = { ecole: 'École', entreprise: 'Entreprise', anniversaire: 'Anniversaire', entre_amis: 'Entre amis' };
+function applyCategory(cat) {
+  const label = CATEGORY_LABELS[cat] || 'Team Building';
+  document.getElementById('tb-brand-label').textContent = label;
+  document.title = label + ' — Enigma';
+}
 function sessionKey() { return 'tb_session_' + EVENT_ID; }
 function queueKey() { return 'tb_queue_' + EVENT_ID; }
 
@@ -387,7 +394,7 @@ async function init() {
   if (saved) {
     session = JSON.parse(saved);
     document.getElementById('tb-event-label').textContent = session.eventName || '';
-    if (session.theme === undefined) {
+    if (session.theme === undefined || session.eventCategory === undefined) {
       // Session enregistrée avant l'ajout des thèmes/vidéo — on la complète en re-interrogeant le serveur.
       try {
         const { data } = await sb.rpc('tb_join_team', { p_event_id: EVENT_ID, p_code: session.teamCode });
@@ -396,15 +403,17 @@ async function init() {
           session = {
             ...session, eventName: row.event_name,
             theme: row.event_theme || 'default', videoUrl: row.event_video_url || null, videoEnabled: !!row.event_video_enabled,
+            eventCategory: row.event_category ?? null,
           };
           localStorage.setItem(sessionKey(), JSON.stringify(session));
           document.getElementById('tb-event-label').textContent = session.eventName || '';
         } else {
-          session.theme = 'default';
+          session.theme = session.theme || 'default'; session.eventCategory = session.eventCategory ?? null;
         }
-      } catch (e) { session.theme = 'default'; }
+      } catch (e) { session.theme = session.theme || 'default'; session.eventCategory = session.eventCategory ?? null; }
     }
     applyTheme(session.theme);
+    applyCategory(session.eventCategory);
     if (ENIGMA_CODE_FROM_URL) { await openEnigma(ENIGMA_CODE_FROM_URL); }
     else { showScreen('home'); loadHome(); }
   } else if (TEAM_CODE_FROM_URL) {
@@ -436,10 +445,12 @@ async function doJoin() {
   session = {
     teamCode: code.toUpperCase(), teamName: row.team_name, teamNumber: row.team_number, eventName: row.event_name,
     theme: row.event_theme || 'default', videoUrl: row.event_video_url || null, videoEnabled: !!row.event_video_enabled,
+    eventCategory: row.event_category ?? null,
   };
   localStorage.setItem(sessionKey(), JSON.stringify(session));
   document.getElementById('tb-event-label').textContent = session.eventName;
   applyTheme(session.theme);
+  applyCategory(session.eventCategory);
   if (ENIGMA_CODE_FROM_URL) { await openEnigma(ENIGMA_CODE_FROM_URL); }
   else { showScreen('home'); loadHome(); }
 }
