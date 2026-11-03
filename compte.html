@@ -40,6 +40,15 @@
   .trophy.locked{opacity:.35;filter:grayscale(1);} .trophy .ic{font-size:26px;} .trophy .t{font-family:var(--fd);font-size:15px;color:var(--fog-bright);margin-top:8px;} .trophy .d{font-size:11px;color:var(--fog-dim);margin-top:3px;}
   .keys{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;} .keys i{width:22px;height:22px;display:block;background:var(--brass);mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 14a5 5 0 1 1 4.9-4H21v3h-2v2h-2v-2h-2v2h-2v-2h-1.1A5 5 0 0 1 7 14zm0-7a2 2 0 1 0 0 4 2 2 0 0 0 0-4z'/%3E%3C/svg%3E") center/contain no-repeat;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 14a5 5 0 1 1 4.9-4H21v3h-2v2h-2v-2h-2v2h-2v-2h-1.1A5 5 0 0 1 7 14zm0-7a2 2 0 1 0 0 4 2 2 0 0 0 0-4z'/%3E%3C/svg%3E") center/contain no-repeat;animation:rise .5s var(--ease) both;}
   table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px;} th{font-family:var(--fm);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--fog-dim);text-align:left;padding:0 10px 10px;border-bottom:1px solid var(--line);font-weight:500;} td{padding:11px 10px;border-bottom:1px solid var(--line);} td.pt{color:var(--brass);font-family:var(--fm);text-align:right;}
+  .ref{border:1px solid var(--line);padding:22px;margin-top:26px;position:relative;} .ref::after{content:"";position:absolute;right:-1px;bottom:-1px;width:24px;height:24px;border-bottom:1px solid var(--brass);border-right:1px solid var(--brass);opacity:.8;}
+  .ref-grid{display:grid;grid-template-columns:1fr 150px;gap:20px;align-items:start;} @media(max-width:560px){.ref-grid{grid-template-columns:1fr;}}
+  .ref-link{display:flex;gap:8px;margin:8px 0 12px;} .ref-link input{margin:0;font-family:var(--fm);font-size:12px;}
+  .ref-actions{display:flex;gap:8px;flex-wrap:wrap;}
+  .ref-qr{background:#fff;padding:8px;width:150px;height:150px;} .ref-qr img,.ref-qr canvas{width:134px!important;height:134px!important;display:block;}
+  .ref-bar{height:8px;background:#090c11;border:1px solid var(--line);margin:8px 0 4px;} .ref-bar i{display:block;height:100%;background:var(--brass);transition:width .9s var(--ease);}
+  .ref-small{font-size:12px;color:var(--fog-dim);}
+  .ref-coupon{display:inline-block;border:1px dashed var(--brass);color:var(--brass);font-family:var(--fm);font-size:13px;padding:6px 10px;margin:6px 6px 0 0;} .ref-coupon.off{opacity:.4;border-color:var(--line-hot);color:var(--fog-dim);}
+  .invite{border:1px solid var(--brass-dim);background:rgba(185,164,105,.07);color:var(--fog-bright);font-size:13px;padding:10px 12px;margin-bottom:16px;}
 </style>
 
 <meta name="description" content="Espace joueur Enigma : consultez votre code membre, vos trophées et votre historique de parties.">
@@ -123,11 +132,13 @@
       <div class="msg" id="l-msg"></div>
       <p style="font-size:12px;color:var(--fog-dim);margin-top:14px;"><a href="#" onclick="return forgot()">Mot de passe oublié ?</a></p>
     </form>
+    <div class="invite hidden" id="invite">🤝 Vous avez été invité par un ami : créez votre compte, il gagnera des points de parrainage dès votre première partie.</div>
     <form id="f-signup" class="hidden" onsubmit="return signup(event)">
       <label>Nom affiché au classement</label><input id="s-name" required maxlength="40" placeholder="Aïcha K.">
       <label>Téléphone</label><input id="s-phone" inputmode="tel" placeholder="07 00 00 00 00">
       <label>Email</label><input id="s-email" type="email" required autocomplete="email">
       <label>Mot de passe (8 caractères min.)</label><input id="s-pass" type="password" required minlength="8" autocomplete="new-password">
+      <label>Code parrain (facultatif)</label><input id="s-parrain" maxlength="12" placeholder="ENG-XXXX" autocomplete="off" style="text-transform:uppercase;">
       <button class="btn" type="submit">Créer mon compte</button>
       <div class="msg" id="s-msg"></div>
     </form>
@@ -140,7 +151,29 @@
       <button class="btn ghost" onclick="logout()">Déconnexion</button>
     </div>
     <div class="stats"><div><b id="p-points">0</b><span>Points</span></div><div><b id="p-keys">0</b><span>Clés</span></div><div><b id="p-rank">—</b><span>Rang</span></div></div>
-    <p class="eyebrow">Clés rapportées</p><div class="keys" id="p-keylist"></div>
+    <div class="ref hidden" id="p-ref">
+      <p class="eyebrow">Parrainage</p>
+      <div class="ref-grid">
+        <div>
+          <div style="font-family:var(--fd);font-size:20px;color:var(--fog-bright);line-height:1.2;" id="r-title">Invitez vos amis</div>
+          <p class="ref-small" id="r-rules" style="margin:6px 0 0;"></p>
+          <div class="ref-link"><input id="r-link" readonly onclick="this.select()"><button class="btn ghost" type="button" onclick="refCopy()">Copier</button></div>
+          <div class="ref-actions">
+            <button class="btn ghost" type="button" onclick="refShare()">Partager</button>
+            <a class="btn ghost" id="r-wa" target="_blank" rel="noopener" style="text-decoration:none;">WhatsApp</a>
+          </div>
+          <div class="msg" id="r-msg"></div>
+        </div>
+        <div><div class="ref-qr" id="r-qr"></div><div class="ref-small" style="text-align:center;margin-top:6px;">À scanner par votre ami</div></div>
+      </div>
+      <div style="margin-top:18px;">
+        <div class="ref-small"><span id="r-progress-txt"></span></div>
+        <div class="ref-bar"><i id="r-bar" style="width:0"></i></div>
+      </div>
+      <div id="r-coupons"></div>
+      <div id="r-filleuls" class="ref-small" style="margin-top:12px;"></div>
+    </div>
+    <p class="eyebrow" style="margin-top:26px;">Clés rapportées</p><div class="keys" id="p-keylist"></div>
     <p class="eyebrow" style="margin-top:26px;">Trophées</p><div class="trophies" id="p-trophies"></div>
     <p class="eyebrow" style="margin-top:26px;">Historique</p>
     <table><thead><tr><th>Date</th><th>Salle</th><th>Équipe</th><th>Clé</th><th style="text-align:right">Pts</th></tr></thead><tbody id="p-hist"></tbody></table>
@@ -148,6 +181,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 const SB_URL='https://lkklkceakfmufgtzzjwy.supabase.co', SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxra2xrY2Vha2ZtdWZndHp6and5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMjczMTYsImV4cCI6MjA5NjYwMzMxNn0.L-I5xh53vycuAFPr0QsOBAeiIEtG0D1rVIWSGjFvils';
 const sb = supabase.createClient(SB_URL, SB_KEY, {auth:{persistSession:true, storageKey:'enigma_player'}});
@@ -163,8 +197,12 @@ const TROPHIES = [
 ];
 
 async function signup(e){ e.preventDefault(); const m=$('#s-msg'); m.className='msg';
-  const {error} = await sb.auth.signUp({email:$('#s-email').value.trim(), password:$('#s-pass').value, options:{data:{display_name:$('#s-name').value.trim(), phone:$('#s-phone').value.trim()}}});
+  const parrain = $('#s-parrain').value.trim().toUpperCase();
+  const data = {display_name:$('#s-name').value.trim(), phone:$('#s-phone').value.trim()};
+  if(parrain) data.parrain = parrain;
+  const {error} = await sb.auth.signUp({email:$('#s-email').value.trim(), password:$('#s-pass').value, options:{data}});
   if(error){ m.textContent = error.message; m.classList.add('err'); return false; }
+  try{ localStorage.removeItem('enigma_parrain'); }catch(_){}
   m.textContent = 'Compte créé. Si un email de confirmation est activé, validez-le puis connectez-vous.'; m.classList.add('ok'); loadProfile(); return false; }
 async function login(e){ e.preventDefault(); const m=$('#l-msg'); m.className='msg';
   const {error} = await sb.auth.signInWithPassword({email:$('#l-email').value.trim(), password:$('#l-pass').value});
@@ -190,8 +228,52 @@ async function loadProfile(){
   $('#p-keylist').innerHTML = (hist||[]).map((_,i)=>`<i style="animation-delay:${i*40}ms"></i>`).join('') || '<span style="font-size:12px;color:var(--fog-dim)">Aucune clé pour l\'instant — à vous de jouer.</span>';
   const st = {keys:(hist||[]).length, points, rooms, rank};
   $('#p-trophies').innerHTML = TROPHIES.map(t=>`<div class="trophy ${t.test(st)?'':'locked'}"><div class="ic">${t.ic}</div><div class="t">${t.t}</div><div class="d">${t.d}</div></div>`).join('');
+  loadReferral(p.player_code);
   $('#p-hist').innerHTML = (hist||[]).map(k=>`<tr><td>${k.game_sessions?.session_date||''}</td><td>${k.game_sessions?.rooms?.name||''}</td><td>${k.game_sessions?.team_name||'—'}</td><td style="font-family:var(--fm);font-size:12px">${k.key_code}</td><td class="pt">+${k.points}</td></tr>`).join('') || '<tr><td colspan="5" style="color:var(--fog-dim)">Aucune partie enregistrée.</td></tr>';
 }
+// ── Parrainage ────────────────────────────────────────────
+const fcfa = n => Number(n||0).toLocaleString('fr-FR') + ' FCFA';
+const esc = s => String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let refUrl = '';
+async function loadReferral(code){
+  const {data:r, error} = await sb.rpc('my_referral_summary');
+  if(error || !r || !r.enabled || !code) return;
+  $('#p-ref').classList.remove('hidden');
+  refUrl = 'https://enigma.ci/compte.html?parrain=' + encodeURIComponent(code);
+  $('#r-link').value = refUrl;
+  const shareText = `Je t'invite chez Enigma Escape Game ! Crée ton compte joueur avec mon lien : ${refUrl}`;
+  $('#r-wa').href = 'https://wa.me/?text=' + encodeURIComponent(shareText);
+  const nb = Math.ceil(r.seuil_points / Math.max(1, r.points_par_filleul));
+  const quand = r.validation === 'inscription' ? 'crée son compte' : 'joue sa première partie chez nous';
+  $('#r-rules').textContent = `Chaque ami qui s'inscrit avec votre lien ou votre QR code et ${quand} vous rapporte ${r.points_par_filleul} point${r.points_par_filleul>1?'s':''}. ${nb} ami${nb>1?'s':''} validé${nb>1?'s':''} = un coupon cadeau de ${fcfa(r.coupon_montant_xof)}${r.coupon_validite_jours ? `, valable ${r.coupon_validite_jours} jours` : ''}.`;
+  const qr = $('#r-qr'); qr.innerHTML = '';
+  if(window.QRCode) new QRCode(qr, {text: refUrl, width: 134, height: 134, correctLevel: QRCode.CorrectLevel.M});
+  const solde = Math.max(0, r.points_solde), seuil = Math.max(1, r.seuil_points);
+  $('#r-progress-txt').innerHTML = `<b style="color:var(--fog-bright)">${solde} / ${seuil} points</b> avant votre prochain coupon · ${r.points_total} point${r.points_total>1?'s':''} gagné${r.points_total>1?'s':''} au total`;
+  requestAnimationFrame(() => { $('#r-bar').style.width = Math.min(100, solde/seuil*100) + '%'; });
+  const coupons = r.coupons || [];
+  $('#r-coupons').innerHTML = coupons.length ? `<p class="eyebrow" style="margin:18px 0 4px;">Vos coupons cadeaux</p>` + coupons.map(c => {
+    const usable = c.actif && (c.restant ?? c.montant) > 0 && (!c.valide_jusqu_au || c.valide_jusqu_au >= new Date().toISOString().slice(0,10));
+    return `<span class="ref-coupon ${usable?'':'off'}" title="${usable ? 'À présenter à l\'accueil' : 'Utilisé ou expiré'}">${esc(c.code)} · ${fcfa(c.montant)}${c.valide_jusqu_au ? ` · jusqu'au ${c.valide_jusqu_au.split('-').reverse().join('/')}` : ''}</span>`;
+  }).join('') + `<div class="ref-small" style="margin-top:6px;">Présentez ce code à l'accueil le jour de votre partie : il est déduit de votre ticket.</div>` : '';
+  const f = r.filleuls || [];
+  const st = {pending:'en attente de sa première partie', validated:'validé ✓', rejected:'non retenu'};
+  $('#r-filleuls').innerHTML = f.length ? `<b style="color:var(--fog)">Vos filleuls (${f.length})</b><br>` + f.map(x => `${esc(x.nom)} — ${st[x.statut] || x.statut}`).join('<br>') : 'Aucun filleul pour l\'instant : partagez votre lien !';
+}
+async function refCopy(){ const m=$('#r-msg'); try{ await navigator.clipboard.writeText(refUrl); m.textContent='Lien copié.'; m.className='msg ok'; }catch(_){ $('#r-link').select(); m.textContent='Copiez le lien sélectionné.'; m.className='msg'; } }
+async function refShare(){ if(navigator.share){ try{ await navigator.share({title:'Enigma Escape Game', text:'Je t\'invite chez Enigma Escape Game !', url:refUrl}); }catch(_){} } else refCopy(); }
+
+// Lien de parrainage : ?parrain=ENG-XXXX → onglet inscription prérempli (mémorisé si l'ami revient plus tard)
+(function(){
+  let code = new URLSearchParams(location.search).get('parrain') || '';
+  try{ if(code) localStorage.setItem('enigma_parrain', code.toUpperCase()); else code = localStorage.getItem('enigma_parrain') || ''; }catch(_){}
+  code = code.trim().toUpperCase().slice(0, 12);
+  if(!code) return;
+  $('#s-parrain').value = code;
+  $('#invite').classList.remove('hidden');
+  document.querySelector('.tab[data-t="signup"]').click();
+})();
+
 function count(sel, target){ const el=$(sel); const t0=performance.now(); (function s(t){ const p=Math.min((t-t0)/900,1); el.textContent=Math.round(target*(1-Math.pow(1-p,3))); if(p<1) requestAnimationFrame(s); })(t0); }
 loadProfile();
 </script>
